@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% capture css %}
+      {% include 'notes.css' %}
+      {% include 'theme-dark.css' %}
+      {% include 'atom-one-dark.css' %}
+    {% endcapture %}
+    <style>
+      {{ css | cssmin }}
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      {{content}}
+    </div>
+    <script>
+      {{ js }}
+    </script>
+  </body>
+</html>

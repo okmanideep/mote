@@ -1,0 +1,23 @@
+{
+  "name": "notes-preview",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cssmin": "^0.4.3",
+    "esbuild": "^0.13.14",
+    "express": "^4.17.1",
+    "highlight.js": "^11.3.1",
+    "liquidjs": "^9.28.5",
+    "markdown-it": "^12.2.0",
+    "markdown-it-checkbox": "^1.1.0",
+    "ws": "^8.2.3"
+  }
+}
