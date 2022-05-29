@@ -24,9 +24,10 @@ const md = MarkdownIt(options).use(MarkdownItChechbox)
 
 hljs.registerAliases("proto", {languageName: 'protobuf'})
 
+// path.resolve("src/client") works from the project root reliably in linux, windows
+// than path.resolve(__dirname, "..", "client")
+// I don't know why. __dirname in both the platforms is $PROJECT_ROOT/src/server
 const liquidRoot = [path.resolve('src/client'), path.resolve('src/client/css'), path.resolve('src/client/js')]
-
-console.log({liquidRoot, dir: __dirname})
 
 const engine = new Liquid({
   root: liquidRoot,
