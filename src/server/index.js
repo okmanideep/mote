@@ -24,17 +24,21 @@ const md = MarkdownIt(options).use(MarkdownItChechbox)
 
 hljs.registerAliases("proto", {languageName: 'protobuf'})
 
+const liquidRoot = [path.resolve('src/client'), path.resolve('src/client/css'), path.resolve('src/client/js')]
+
+console.log({liquidRoot, dir: __dirname})
+
 const engine = new Liquid({
-  root: [path.resolve(__dirname, '../client/'), path.resolve(__dirname,'../client/css/'), path.resolve(__dirname, '../client/js')],
+  root: liquidRoot,
 })
 engine.registerFilter('cssmin', cssmin)
 const template = engine.parseFileSync("default.liquid")
 const buildOutput = esbuild.buildSync({
-  entryPoints: [path.resolve(__dirname, '../client/js/index.js')],
+  entryPoints: [path.resolve('src/client/js/index.js')],
   write: false,
   bundle: true,
   platform: 'browser',
-  nodePaths: [path.resolve(__dirname, '../../node_modules')],
+  nodePaths: [path.resolve('node_modules')],
   format: 'iife',
   outdir: 'out',
 })
@@ -78,7 +82,7 @@ wss.on('connection', function(ws, req) {
 })
 
 function getMdFilePath(filename) {
-  return path.resolve('/home/manideep/Dropbox/notes', `${filename}.md`)
+  return path.resolve('C:/Users/okman/Dropbox/notes', `${filename}.md`)
 }
 
 function getHTMLfromMdFile(file) {
