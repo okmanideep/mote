@@ -25,7 +25,7 @@ const options = {
 
 const md = MarkdownIt(options).use(MarkdownItChechbox)
 
-hljs.registerAliases("proto", {languageName: 'protobuf'})
+hljs.registerAliases("proto", { languageName: 'protobuf' })
 
 // path.resolve("src/client") works from the project root reliably in linux, windows
 // than path.resolve(__dirname, "..", "client")
@@ -57,7 +57,7 @@ app.get('/:name', async function(req, res) {
     res.sendStatus(404)
   } else {
     const content = getHTMLfromMdFile(file)
-    res.send(await engine.render(template, {content, js}))
+    res.send(await engine.render(template, { content, js }))
   }
 })
 
@@ -70,14 +70,14 @@ wss.on('connection', function(ws, req) {
   const filename = req.url.substring(1)
   const mdFilePath = getMdFilePath(filename)
   if (!fs.existsSync(mdFilePath)) {
-    ws.send(JSON.stringify({type: 'error', data: {message: `Couldn't find ${mdFilePath}`}}))
+    ws.send(JSON.stringify({ type: 'error', data: { message: `Couldn't find ${mdFilePath}` } }))
     return
   }
 
-  fs.watchFile(mdFilePath, {persistent: true, interval: 300}, async () => {
+  fs.watchFile(mdFilePath, { persistent: true, interval: 300 }, async () => {
     console.log("file updated")
     const contents = await getHTMLfromMdFile(mdFilePath)
-    ws.send(JSON.stringify({type: 'update', data: {contents}}))
+    ws.send(JSON.stringify({ type: 'update', data: { contents } }))
   })
 
   ws.onclose = () => {
@@ -90,18 +90,23 @@ function getMdFilePath(filename) {
 }
 
 function getHTMLfromMdFile(file) {
-    const markdown = fs.readFileSync(file).toString()
-    return md.render(markdown)
+  const markdown = fs.readFileSync(file).toString()
+  return md.render(markdown)
 }
 
 function highlight(str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return '<pre class="hljs"><code>' +
-          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-          '</code></pre>';
-      } catch (__) {}
-    }
+  if (lang === "mermaid") {
+    // browser javascript will replace this with diagram
+    return '<div class="mermaid">' + str + '</div>'
+  }
 
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      return '<pre class="hljs"><code>' +
+        hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+        '</code></pre>';
+    } catch (__) { }
+  }
+
+  return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
 }

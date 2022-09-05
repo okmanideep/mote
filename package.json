@@ -18,6 +18,7 @@
     "liquidjs": "^9.28.5",
     "markdown-it": "^12.2.0",
     "markdown-it-checkbox": "^1.1.0",
+    "mermaid": "^9.1.6",
     "ws": "^8.2.3"
   }
 }
