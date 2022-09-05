@@ -1,5 +1,5 @@
 const path = window.location.pathname
-const ws = new WebSocket(`ws://localhost:8080${path}`)
+const ws = new WebSocket(`ws://localhost:{{WEBSOCKET_PORT}}${path}`)
 ws.onopen = () => {
   console.log("Connected")
 }

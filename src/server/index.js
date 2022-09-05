@@ -8,10 +8,13 @@ import MarkdownIt from 'markdown-it'
 import MarkdownItChechbox from 'markdown-it-checkbox'
 import hljs from 'highlight.js'
 import cssmin from 'cssmin'
-const __dirname = new URL('.', import.meta.url).pathname;
+import getConfig from './config.js'
 
 const app = express()
-const PORT = 3000
+const config = await getConfig()
+const SITE_PORT = config['site_port']
+const MOTES_DIR = config['motes_dir']
+const WEBSOCKET_PORT = config['websocket_port']
 
 const options = {
   html: true,
@@ -44,7 +47,7 @@ const buildOutput = esbuild.buildSync({
   outdir: 'out',
 })
 
-const js = buildOutput.outputFiles[0].text
+const js = buildOutput.outputFiles[0].text.replace('{{WEBSOCKET_PORT}}', `${WEBSOCKET_PORT}`)
 
 app.get('/:name', async function(req, res) {
   const name = req.params['name']
@@ -58,11 +61,11 @@ app.get('/:name', async function(req, res) {
   }
 })
 
-app.listen(PORT, () => {
+app.listen(SITE_PORT, () => {
   console.log("http://localhost:3000/current")
 })
 
-const wss = new WebSocketServer({ port: 8080 })
+const wss = new WebSocketServer({ port: WEBSOCKET_PORT })
 wss.on('connection', function(ws, req) {
   const filename = req.url.substring(1)
   const mdFilePath = getMdFilePath(filename)
@@ -83,7 +86,7 @@ wss.on('connection', function(ws, req) {
 })
 
 function getMdFilePath(filename) {
-  return path.resolve('C:/Users/okman/Dropbox/notes', `${filename}.md`)
+  return path.resolve(MOTES_DIR, `${filename}.md`)
 }
 
 function getHTMLfromMdFile(file) {
