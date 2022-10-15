@@ -4,6 +4,13 @@ mermaid.initialize(
   {
     startOnLoad: true,
     theme: 'dark',
+    themeVariables: {
+      'fontFamily': '"Jetbrains Mono", monospace',
+      'background': '#22262C',
+      'mainBkg': '#282C34',
+      'primaryBorderColor': '#9AA2B1',
+      'actorBorder': '#9AA2B1',
+    }
   }
 )
 
