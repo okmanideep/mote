@@ -12,13 +12,18 @@ Markdown Server for my notes
 Windows: `~/AppData/Local/mote/config.json`
 Linux/MacOS: `~/.config/mote/config.json`
 
-## Usage
+## Installation
 * Add configuration file as described above
 * `git clone git@github.com:okmanideep/mote`
 * `cd mote`
-* `npm i`
-* `npm start`
+* `npm i -g`
+
+## Starting Mote
+* `mote start`
 
 If you have `name.md` in your notes directory, then open `http://localhost:<site_port>/current` to view it in the browser.
 
 💡**Protip**: If you use vim, you can use [this function](https://github.com/okmanideep/dotfiles/blob/baf644712003a0abe42db879a58b3a359f274667/nvim/init.vim#L188) and map to your preferred key-binding
+
+## Stopping Mote
+* `mote stop`
