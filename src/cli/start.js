@@ -3,13 +3,18 @@ import { fork } from 'node:child_process'
 import envPaths from 'env-paths'
 import fs from 'node:fs'
 import path from 'node:path'
+import * as url from 'url';
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+const timeout = ms => new Promise(res => setTimeout(res, ms))
 
 async function start() {
   const isAlreadyRunning = await Server.isRunning()
 
   if (!isAlreadyRunning) {
     await spawnServer()
-    console.log('Mote Started 🟢')
   } else {
     console.log('Mote is already running ...')
   }
@@ -17,13 +22,30 @@ async function start() {
 
 async function spawnServer() {
   const {out, err} = await getLogStreams()
-  const moteServer = fork('./src/server/index.js', ['mote-server'], { 
+  const serverPath = moteServerPath()
+  const moteServer = fork(serverPath, ['mote-server'], { 
     detached: true,
-    stdio: ['ignore', out, err, 'ipc' ]
+    stdio: ['ignore', out, err, 'ipc']
   })
 
   moteServer.channel.unref()
   moteServer.unref()
+
+  let isRunning = await Server.isRunning()
+  let waitTime = 0
+  while (!isRunning && waitTime < 1000) {
+    await timeout(100)
+    waitTime += 100
+
+    isRunning = await Server.isRunning()
+  }
+
+  if (!isRunning) {
+    console.error('❌ Could not start mote server')
+    console.error({serverPath})
+  } else {
+    console.log('Mote Started 🟢')
+  }
 }
 
 async function getLogStreams() {
@@ -39,5 +61,8 @@ async function getLogStreams() {
   return { out, err}
 }
 
+function moteServerPath() {
+  return path.join(__dirname, '..', 'server', 'index.js')
+}
 
 export default start

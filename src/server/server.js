@@ -10,42 +10,40 @@ import hljs from 'highlight.js'
 import cssmin from 'cssmin'
 import getConfig from './config.js'
 import fetch from 'node-fetch'
+import * as url from 'url';
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const config = await getConfig()
 const SITE_PORT = config['site_port']
 const MOTES_DIR = config['motes_dir']
 const WEBSOCKET_PORT = config['websocket_port']
 
+const options = {
+  html: true,
+  breaks: true,
+  linkify: true,
+  highlight: highlight
+}
+const md = MarkdownIt(options).use(MarkdownItChechbox)
+
 async function start() {
   const app = express()
 
-  const options = {
-    html: true,
-    breaks: true,
-    linkify: true,
-    highlight: highlight
-  }
-
-  const md = MarkdownIt(options).use(MarkdownItChechbox)
-
   hljs.registerAliases("proto", { languageName: 'protobuf' })
 
-  // path.resolve("src/client") works from the project root reliably in linux, windows
-  // than path.resolve(__dirname, "..", "client")
-  // I don't know why. __dirname in both the platforms is $PROJECT_ROOT/src/server
-  const liquidRoot = [path.resolve('src/client'), path.resolve('src/client/css'), path.resolve('src/client/js')]
-
   const engine = new Liquid({
-    root: liquidRoot,
+    root: liquidRootPaths(),
   })
   engine.registerFilter('cssmin', cssmin)
   const template = engine.parseFileSync("default.liquid")
   const buildOutput = esbuild.buildSync({
-    entryPoints: [path.resolve('src/client/js/index.js')],
+    entryPoints: clientJsPaths(),
     write: false,
     bundle: true,
     platform: 'browser',
-    nodePaths: [path.resolve('node_modules')],
+    nodePaths: nodeModulesPaths(),
     format: 'iife',
     outdir: 'out',
   })
@@ -63,7 +61,7 @@ async function start() {
     if (!fs.existsSync(file)) {
       res.sendStatus(404)
     } else {
-      const content = getHTMLfromMdFile(md, file)
+      const content = getHTMLfromMdFile(file)
       res.send(await engine.render(template, { content, js }))
     }
   })
@@ -73,7 +71,7 @@ async function start() {
   })
 
   const wss = new WebSocketServer({ port: WEBSOCKET_PORT })
-  wss.on('connection', function(ws, req) {
+  wss.on('connection', (ws, req) => {
     const filename = req.url.substring(1)
     const mdFilePath = getMdFilePath(filename)
     if (!fs.existsSync(mdFilePath)) {
@@ -95,10 +93,10 @@ async function start() {
 }
 
 function getMdFilePath(filename) {
-  return path.resolve(MOTES_DIR, `${filename}.md`)
+  return path.join(MOTES_DIR, `${filename}.md`)
 }
 
-function getHTMLfromMdFile(md, file) {
+function getHTMLfromMdFile(file) {
   const markdown = fs.readFileSync(file).toString()
   return md.render(markdown)
 }
@@ -127,6 +125,25 @@ async function isRunning() {
   } catch(e) {
     return false
   }
+}
+
+function liquidRootPaths() {
+  return [
+    path.join(__dirname, '..', 'client'),
+    path.join(__dirname, '..', 'client', 'css'),
+  ]
+}
+
+function clientJsPaths() {
+  return [
+    path.join(__dirname, '..', 'client', 'js', 'index.js')
+  ]
+}
+
+function nodeModulesPaths() {
+  return [
+    path.join(__dirname, '..', '..', 'node_modules')
+  ]
 }
 
 export default { start, isRunning }

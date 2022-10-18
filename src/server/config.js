@@ -17,19 +17,13 @@ Example configuration
 */
 
 import path from "node:path"
+import envPaths from "env-paths"
 import process from "node:process"
 import fs from "node:fs/promises"
 
-function getOsConfigDir() {
-  if (process.platform === 'win32') {
-    return path.resolve(process.env.HOME, "AppData/Local")
-  } else {
-    return path.resolve(process.env.HOME, ".config")
-  }
-}
-
 async function getConfig() {
-  const configFilePath = path.join(getOsConfigDir(), "mote", "config.json")
+  const paths = envPaths('mote', { suffix: '' })
+  const configFilePath = path.join(paths.config, "config.json")
   return JSON.parse(await fs.readFile(configFilePath))
 }
 
