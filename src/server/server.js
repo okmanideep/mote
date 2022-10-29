@@ -129,20 +129,20 @@ async function isRunning() {
 
 function liquidRootPaths() {
   return [
-    path.join(__dirname, '..', 'client'),
-    path.join(__dirname, '..', 'client', 'css'),
+    path.resolve(__dirname, '..', 'client'),
+    path.resolve(__dirname, '..', 'client', 'css'),
   ]
 }
 
 function clientJsPaths() {
   return [
-    path.join(__dirname, '..', 'client', 'js', 'index.js')
+    path.resolve(__dirname, '..', 'client', 'js', 'index.js')
   ]
 }
 
 function nodeModulesPaths() {
   return [
-    path.join(__dirname, '..', '..', 'node_modules')
+    path.resolve(__dirname, '..', '..', 'node_modules')
   ]
 }
 

@@ -62,7 +62,7 @@ async function getLogStreams() {
 }
 
 function moteServerPath() {
-  return path.join(__dirname, '..', 'server', 'index.js')
+  return path.resolve(__dirname, '..', 'server', 'index.js')
 }
 
 export default start
