@@ -27,36 +27,46 @@ h1,h2,h3,h4,h5,h6 {
 
 h1 {
   font-size: 2.0em;
+  margin: 2em 0 0.4em 0;
   padding-bottom: 0.65em;
   border-bottom: 1px solid var(--main-border-color);
 }
 
 h2 {
   font-size: 1.8em;
+  margin: 1.6em 0 0.8em 0;
 }
 
 h3 {
   font-size: 1.6em;
+  margin: 1em 0 0.5em 0;
 }
 
 h4 {
   font-size: 1.4em;
+  margin: 1em 0 0.5em 0;
 }
 
 h5 {
   font-size: 1.2em;
+  margin: 0.8em 0 0.4em 0;
 }
 
 h6 {
   font-size: 1.1em;
+  margin-top: 0.8em 0 0.4em 0;
+}
+
+p {
+  margin: 1em 0 0.5em 0;
 }
 
 pre {
   padding: 0.6em;
   border-radius: 4px;
-  overflow-x: scroll;
   margin-bottom: 1em;
   margin-top: 0.4em;
+  overflow-x: auto;
 }
 
 code {
@@ -123,11 +133,6 @@ table tr th :first-child, table tr td :first-child {
 }
 table tr th :last-child, table tr td :last-child {
   margin-bottom: 0; 
-}
-
-p {
-  margin-top: 1em;
-  margin-bottom: 0.4em;
 }
 
 ul,ol {
