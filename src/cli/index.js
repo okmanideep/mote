@@ -3,6 +3,7 @@
 import { program } from 'commander'
 import start from './start.js'
 import stop from './stop.js'
+import open from './open.js'
 
 async function restart() {
   await stop()
@@ -23,5 +24,11 @@ program
   .command('restart')
   .description('Restart the mote server')
   .action(restart)
+
+program
+  .command('open')
+  .description('Open a markdown file in browser')
+  .argument('<path>', 'path of the markdown file')
+  .action(open)
 
 program.parse()

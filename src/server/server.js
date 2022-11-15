@@ -44,6 +44,16 @@ async function start() {
       res.sendStatus(200)
   })
 
+  app.get('/p/:path', async function(req, res) {
+    const filePath = req.params['path']
+    if (!fs.existsSync(filePath)) {
+      res.status(404).send(`<h1>${filePath} not found</h1>`)
+    } else {
+      const content = mdRenderer.render(filePath)
+      res.send(await engine.render(template, { content, js }))
+    }
+  })
+
   app.get('/:name', async function(req, res) {
     const name = req.params['name']
     const file = mdFilePath(name)
@@ -63,8 +73,15 @@ async function start() {
 
   const wss = new WebSocketServer({ port: WEBSOCKET_PORT })
   wss.on('connection', (ws, req) => {
-    const filename = req.url.substring(1)
-    const file = mdFilePath(filename)
+    let file
+
+    if (req.url.startsWith('/p/')) {
+      file = decodeURIComponent(req.url.substring(3))
+    } else {
+      const filename = req.url.substring(1)
+      file = mdFilePath(filename)
+    }
+
     if (!fs.existsSync(file)) {
       ws.send(JSON.stringify({ type: 'error', data: { message: `Couldn't find ${file}` } }))
       return

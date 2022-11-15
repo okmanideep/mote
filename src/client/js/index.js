@@ -27,5 +27,7 @@ ws.onmessage = (msg) => {
     const contentDiv = document.querySelector('.content')
     contentDiv.innerHTML = payload.data.contents
     mermaid.init('.mermaid')
+  } else if (payload.type === 'error') {
+    console.error(payload.data.message)
   }
 }

@@ -1,5 +1,5 @@
 # Mote
-Markdown Server for my notes
+Markdown Server for notes and other md files
 
 ## Configuration
 ```json
@@ -21,11 +21,16 @@ MacOs: `~/Library/Preferences/mote/config.json`
 * `npm i -g`
 
 ## Starting Mote
-* `mote start`
+`mote start`
 
-If you have `filename.md` in your notes directory, then open `http://localhost:<site_port>/filename` to view it in the browser.
+## Opening a file
+`mote open path/to/file.md`
 
-💡**Protip**: If you use vim, you can use [this function](https://github.com/okmanideep/dotfiles/blob/baf644712003a0abe42db879a58b3a359f274667/nvim/init.vim#L188) and have your preferred key-binding to open you notes in the browser
+💡**Protip**: If you use vim, you can use [this function](https://github.com/okmanideep/dotfiles/blob/04ca333af76bae7416464ff1d30acecbc3ebfd2d/nvim/init.vim#L188) and have your preferred key-binding to open you notes or any markdown file in the browser
 
 ## Stopping Mote
 * `mote stop`
+
+## URL Schema
+Files in `motes_dir` -> `http://localhost:${site_port}/filename`
+Other files -> `http://localhost:${site_port}/p/fullpathtofile.md`
