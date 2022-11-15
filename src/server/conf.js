@@ -54,7 +54,7 @@ async function writeConfig({sitePort, websocketPort, motesDir }) {
   const paths = envPaths('mote', { suffix: '' })
   // make sure the directory exists
   try {
-    await fs.mkdir(paths.config)
+    await fs.mkdir(paths.config, { recursive: true })
   } catch (e) {
     if (e.code !== 'EEXIST') {
       throw e
