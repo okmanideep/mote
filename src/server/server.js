@@ -1,21 +1,17 @@
 import express from 'express'
-import esbuild from 'esbuild'
 import { WebSocketServer } from 'ws'
 import path from 'path'
 import fs from 'fs'
-import { Liquid } from 'liquidjs'
-import cssmin from 'cssmin'
 import conf from './conf.js'
 import mdRenderer from './md-renderer.js'
-import * as url from 'url';
-
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import PageRenderer from './page-renderer-liqiud.js'
 
 async function start() {
   const config = await conf.get()
   const SITE_PORT = config['site_port']
   const MOTES_DIR = config['motes_dir']
   const WEBSOCKET_PORT = config['websocket_port']
+  const pageRenderer = new PageRenderer(WEBSOCKET_PORT)
 
   const mdFilePath = (filename) => {
     return path.join(MOTES_DIR, `${filename}.md`)
@@ -23,25 +19,12 @@ async function start() {
 
   const app = express()
 
-  const engine = new Liquid({
-    root: liquidRootPaths(),
-  })
-  engine.registerFilter('cssmin', cssmin)
-  const template = engine.parseFileSync("default.liquid")
-  const buildOutput = esbuild.buildSync({
-    entryPoints: clientJsPaths(),
-    write: false,
-    bundle: true,
-    platform: 'browser',
-    nodePaths: nodeModulesPaths(),
-    format: 'iife',
-    outdir: 'out',
-  })
-
-  const js = buildOutput.outputFiles[0].text.replace('{{WEBSOCKET_PORT}}', `${WEBSOCKET_PORT}`)
-
   app.get('/status', async function(_, res) {
       res.sendStatus(200)
+  })
+
+  app.get('/favicon.ico', async function(_, res) {
+      res.sendStatus(404)
   })
 
   app.get('/p/:path', async function(req, res) {
@@ -49,8 +32,7 @@ async function start() {
     if (!fs.existsSync(filePath)) {
       res.status(404).send(`<h1>${filePath} not found</h1>`)
     } else {
-      const content = mdRenderer.render(filePath)
-      res.send(await engine.render(template, { content, js }))
+      res.send(await pageRenderer.render(filePath))
     }
   })
 
@@ -62,8 +44,7 @@ async function start() {
       console.log(`Could not find ${file}`)
       res.sendStatus(404)
     } else {
-      const content = mdRenderer.render(file)
-      res.send(await engine.render(template, { content, js }))
+      res.send(await pageRenderer.render(file))
     }
   })
 
@@ -98,25 +79,6 @@ async function start() {
     }
   })
 
-}
-
-function liquidRootPaths() {
-  return [
-    path.resolve(__dirname, '..', 'client'),
-    path.resolve(__dirname, '..', 'client', 'css'),
-  ]
-}
-
-function clientJsPaths() {
-  return [
-    path.resolve(__dirname, '..', 'client', 'js', 'index.js')
-  ]
-}
-
-function nodeModulesPaths() {
-  return [
-    path.resolve(__dirname, '..', '..', 'node_modules')
-  ]
 }
 
 export default { start }

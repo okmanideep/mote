@@ -7,3 +7,7 @@
   --highlight-border-color: #218EE8;
   --raised-bg-color: #f7f7f7;
 }
+
+pre {
+  background: #282c34;
+}

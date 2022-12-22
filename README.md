@@ -26,11 +26,22 @@ MacOs: `~/Library/Preferences/mote/config.json`
 ## Opening a file
 `mote open path/to/file.md`
 
-💡**Protip**: If you use vim, you can use [this function](https://github.com/okmanideep/dotfiles/blob/04ca333af76bae7416464ff1d30acecbc3ebfd2d/nvim/init.vim#L188) and have your preferred key-binding to open you notes or any markdown file in the browser
+💡**Protip**: 
+If you use vim, you can use the following vim script and have your preferred key-binding to open you notes or any markdown file in the browser
+```vim
+function s:OpenMote()
+    let l:command = 'mote open '.expand('%:t')
+    call system(l:command)
+endfunction
+
+command! OpenMote :call <SID>OpenMote()
+" map to your preferred key combo
+nnoremap gn <cmd>OpenMote<CR>
+```
 
 ## Stopping Mote
 * `mote stop`
 
 ## URL Schema
 Files in `motes_dir` -> `http://localhost:${site_port}/filename`
-Other files -> `http://localhost:${site_port}/p/fullpathtofile.md`
+Other files -> `http://localhost:${site_port}/p/full%2Fpath%2Fto%2Ffile.md`
