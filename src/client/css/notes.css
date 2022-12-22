@@ -95,7 +95,7 @@ blockquote>p {
   padding: 0.6em 1em;
 }
 
-p, li {
+p, li, table tr th, table tr td {
   line-height: 1.5em;
 }
 
