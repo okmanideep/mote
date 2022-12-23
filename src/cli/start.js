@@ -12,6 +12,10 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const timeout = ms => new Promise(res => setTimeout(res, ms))
 
+function serverCwd() {
+  return path.resolve(__dirname, '..', '..')
+}
+
 async function start() {
   const configExists = await conf.exists()
 
@@ -79,7 +83,8 @@ async function _spawnServer(config) {
   const serverPath = _moteServerPath()
   const moteServer = fork(serverPath, ['mote-server'], { 
     detached: true,
-    stdio: ['ignore', out, err, 'ipc']
+    stdio: ['ignore', out, err, 'ipc'],
+    cwd: serverCwd()
   })
 
   moteServer.channel.unref()
