@@ -1,7 +1,7 @@
 <p>🌝</p>
 <style>
   theme-switcher {
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     padding: 1.4em;
@@ -23,7 +23,7 @@
     --raised-bg-color: #282c34;
   }
 
-  body.light {
+  body[data-theme="light"] {
     --main-bg-color: #ffffff;
     --main-text-color: #343434;
     --heading-text-color: #434343;
@@ -32,41 +32,47 @@
     --highlight-border-color: #218EE8;
     --raised-bg-color: #f7f7f7;
   }
-  body.light pre {
-    background: #282c32;
-  }
 </style>
 <script>
 window.customElements.define("theme-switcher", class extends HTMLElement {
   constructor(...args) {
     super(...args)
+    this.toggleTheme = this.toggleTheme.bind(this)
+    this.onThemeChange = this.onThemeChange.bind(this)
+
+    this.body = document.querySelector("body") 
     this.setTheme('dark')
+    this.themeChangeObserver = new MutationObserver(this.onThemeChange)
+    this.template = this.querySelector("p")
   }
   connectedCallback() {
-    let that = this
-    let template = this.querySelector("p")
-    template.addEventListener('click', () => {
-      that.toggleTheme()
+    this.template.addEventListener('click', this.toggleTheme)
+
+    this.themeChangeObserver.observe(this.body, {
+      attributeFilter: ['data-theme']
     })
   }
+  disconnectedCallback() {
+    this.template.removeEventListener('click', this.toggleTheme)
+    this.themeChangeObserver.disconnect()
+  }
+  onThemeChange() {
+    let theme = this.body.getAttribute('data-theme')
+    if (theme === 'light') {
+      this.template.innerHTML = "🌚"
+    } else {
+      this.template.innerHTML = "🌝"
+    }
+  }
   toggleTheme() {
-    if (this.currentTheme === 'dark') {
+    if (this.body.getAttribute('data-theme') === 'dark') {
       this.setTheme('light')
     } else {
       this.setTheme('dark')
     }
   }
   setTheme(theme) {
-    this.currentTheme = theme
-    let template = this.querySelector("p")
-    let body = document.querySelector("body")
-    if (theme === 'light') {
-      body.classList.add('light')
-      template.innerHTML = "🌚"
-    } else {
-      body.classList.remove('light')
-      template.innerHTML = "🌝"
-    }
+    this.body.setAttribute("data-theme", theme)
   }
 })
 </script>

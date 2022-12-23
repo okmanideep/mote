@@ -70,12 +70,22 @@ async function start() {
 
     fs.watchFile(file, { persistent: true, interval: 300 }, async () => {
       console.log("file updated")
-      const contents = await mdRenderer.render(file)
+      const contents = mdRenderer.render(file)
       ws.send(JSON.stringify({ type: 'update', data: { contents } }))
     })
 
     ws.onclose = () => {
       fs.unwatchFile(file)
+    }
+
+    ws.onmessage = (msg) => {
+      const payload = JSON.parse(msg.data)
+
+      if (payload.type === 'theme-changed') {
+        console.log("theme changed")
+        const contents = mdRenderer.render(file) 
+        ws.send(JSON.stringify({ type: 'update', data: { contents } }))
+      }
     }
   })
 
