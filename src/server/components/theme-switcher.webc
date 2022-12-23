@@ -1,40 +1,40 @@
 <p>🌝</p>
 <style>
-theme-switcher {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 1.4em;
-}
-theme-switcher p {
-  font: inherit;
-  display: block;
-  margin: 0;
-  font-size: 1.4em;
-}
+  theme-switcher {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1.4em;
+  }
+  theme-switcher p {
+    font: inherit;
+    display: block;
+    margin: 0;
+    font-size: 1.4em;
+  }
 
-body {
-  --main-bg-color: #22262c;
-  --main-text-color: #ffffff;
-  --heading-text-color: #f7f7f7;
-  --main-border-color: #333333;
-  --highlight-text-color: #61aeee;
-  --highlight-border-color: #218EE8;
-  --raised-bg-color: #282c34;
-}
+  body {
+    --main-bg-color: #22262c;
+    --main-text-color: #ffffff;
+    --heading-text-color: #f7f7f7;
+    --main-border-color: #333333;
+    --highlight-text-color: #61aeee;
+    --highlight-border-color: #218EE8;
+    --raised-bg-color: #282c34;
+  }
 
-body.light {
-  --main-bg-color: #ffffff;
-  --main-text-color: #343434;
-  --heading-text-color: #434343;
-  --main-border-color: #d7d7d7;
-  --highlight-text-color: #1268ae;
-  --highlight-border-color: #218EE8;
-  --raised-bg-color: #f7f7f7;
-}
-body.light pre {
-  background: #282c32;
-}
+  body.light {
+    --main-bg-color: #ffffff;
+    --main-text-color: #343434;
+    --heading-text-color: #434343;
+    --main-border-color: #d7d7d7;
+    --highlight-text-color: #1268ae;
+    --highlight-border-color: #218EE8;
+    --raised-bg-color: #f7f7f7;
+  }
+  body.light pre {
+    background: #282c32;
+  }
 </style>
 <script>
 window.customElements.define("theme-switcher", class extends HTMLElement {

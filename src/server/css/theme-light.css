@@ -1,0 +1,13 @@
+:root {
+  --main-bg-color: #ffffff;
+  --main-text-color: #343434;
+  --heading-text-color: #434343;
+  --main-border-color: #d7d7d7;
+  --highlight-text-color: #1268ae;
+  --highlight-border-color: #218EE8;
+  --raised-bg-color: #f7f7f7;
+}
+
+pre {
+  background: #282c34;
+}

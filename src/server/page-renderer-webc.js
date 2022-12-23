@@ -1,28 +1,14 @@
 import { WebC } from '@11ty/webc'
+import cssmin from 'cssmin'
 import mdRenderer from './md-renderer.js'
 import path from 'node:path'
 import esbuild from 'esbuild'
-import * as url from 'url';
+import os from 'node:os'
+import * as url from 'url'
+import fs from 'node:fs/promises'
+import normalizePath from 'normalize-path'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-
-function componentsPath() {
-  return path.resolve(__dirname, '..', 'client', 'components', '**.webc')
-}
-
-function pageComponentPath() {
-  return path.resolve(__dirname, '..', 'client', 'page.webc')
-}
-
-function indexComponentPath() {
-  return path.resolve(__dirname, '..', 'client', 'index.webc')
-}
-
-function clientJsPaths() {
-  return [
-    path.resolve(__dirname, '..', 'client', 'js', 'index.js')
-  ]
-}
 
 function nodeModulesPaths() {
   return [
@@ -30,41 +16,81 @@ function nodeModulesPaths() {
   ]
 }
 
+function pageInputPath() {
+  return path.resolve(__dirname, 'page.webc')
+}
+
+function indexInputPath() {
+  return path.resolve(__dirname, 'index.webc')
+}
+
+function componentsPath() {
+  return path.resolve(__dirname, 'components', '**.webc')
+}
+
 class WebCPageRenderer {
   constructor(websocketPort) {
     this.websocketPort = websocketPort
     this.pageC = new WebC()
     this.pageC.setBundlerMode(true)
-    this.pageC.defineComponents(componentsPath())
-    this.pageC.setInputPath(pageComponentPath())
+    // https://github.com/11ty/webc/issues/92
+    // normalized path is required for path provided to `defineComponents`
+    this.pageC.defineComponents(normalizePath(componentsPath()))
+    this.pageC.setInputPath(pageInputPath())
+    console.log({globalComponents: this.pageC.globalComponents})
 
     this.indexC = new WebC()
-    this.indexC.setInputPath(indexComponentPath())
-    const buildOutput = esbuild.buildSync({
-      entryPoints: clientJsPaths(),
-      write: false,
-      bundle: true,
-      platform: 'browser',
-      nodePaths: nodeModulesPaths(),
-      format: 'iife',
-      outdir: 'out',
-    })
-    this.indexJs = buildOutput.outputFiles[0].text.replace('{{WEBSOCKET_PORT}}', `${websocketPort}`)
+    this.indexC.setInputPath(indexInputPath())
   }
-  async render(path) {
-    let content = mdRenderer.render(path)
-    let {html, css, js} = await this.pageC.compile({
-      data: {
-        content
-      }
-    })
 
-    let finalCss = css.join("\n")
+  async getCompiledResults() {
+    if (this.compiled) {
+      return this.compiled
+    }
+
+    let { html, css, js } = await this.pageC.compile()
+
+    let finalCss = cssmin(css.join("\n"))
     let webcBundledJs = [...js].join("\n")
 
-    let {html: finalHtml } = await this.indexC.compile({
+    let tmpDir
+    let finalJs
+    try {
+      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mote'))
+      let jsPath = path.join(tmpDir, 'webc-bundled.js')
+      await fs.writeFile(jsPath, webcBundledJs)
+      let buildOutput = esbuild.buildSync({
+        entryPoints: [jsPath],
+        write: false,
+        bundle: true,
+        platform: 'browser',
+        nodePaths: nodeModulesPaths(),
+        format: 'iife',
+        outdir: 'out',
+      })
+      finalJs = buildOutput.outputFiles[0].text.replace("{{WEBSOCKET_PORT}}", `${this.websocketPort}`)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      fs.rm(tmpDir, {recursive: true})
+    }
+
+    this.compiled = {
+      html,
+      css: finalCss,
+      js: finalJs
+    }
+
+    return this.compiled
+  }
+
+  async render(path) {
+    let content = mdRenderer.render(path)
+    let { html, css, js } = await this.getCompiledResults()
+
+    let { html: finalHtml } = await this.indexC.compile({
       data: {
-        html, css: finalCss, webcBundledJs, indexJs: this.indexJs
+        html, css, js, content
       }
     })
 

@@ -4,7 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import conf from './conf.js'
 import mdRenderer from './md-renderer.js'
-import PageRenderer from './page-renderer-liqiud.js'
+import PageRenderer from './page-renderer-webc.js'
 
 async function start() {
   const config = await conf.get()

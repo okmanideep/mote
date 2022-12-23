@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style webc:keep @raw="css"></style>
+  </head>
+  <body>
+    <div class="content" webc:keep @raw="content">
+      <!-- markdown content will come here -->
+    </div>
+    <template webc:nokeep @raw="html">
+      <!-- HTML of other components like theme-switcher will be here -->
+    </template>
+    <script webc:keep @raw="js">
+    </script>
+  </body>
+</html>

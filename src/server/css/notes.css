@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital@0;1&family=Rubik:ital,wght@0,600;1,600&display=swap');
+
+body {
+  background-color: var(--main-bg-color);
+}
+
+.content {
+  width: 96%;
+  margin: auto;
+  font-family: 'Barlow', sans-serif;
+  font-size: 1rem;
+  color: var(--main-text-color);
+}
+
+@media only screen and (min-device-width: 960px) {
+  .content {
+    width: 880px;
+    font-size: 1.2rem;
+  }
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 600;
+  color: var(--heading-text-color);
+}
+
+h1 {
+  font-size: 2.0em;
+  margin: 2em 0 0.4em 0;
+  padding-bottom: 0.65em;
+  border-bottom: 1px solid var(--main-border-color);
+}
+
+h2 {
+  font-size: 1.8em;
+  margin: 1.6em 0 0.8em 0;
+}
+
+h3 {
+  font-size: 1.6em;
+  margin: 1em 0 0.5em 0;
+}
+
+h4 {
+  font-size: 1.4em;
+  margin: 1em 0 0.5em 0;
+}
+
+h5 {
+  font-size: 1.2em;
+  margin: 0.8em 0 0.4em 0;
+}
+
+h6 {
+  font-size: 1.1em;
+  margin-top: 0.8em 0 0.4em 0;
+}
+
+p {
+  margin: 1em 0 0.5em 0;
+}
+
+pre {
+  padding: 0.6em;
+  border-radius: 4px;
+  margin-bottom: 1em;
+  margin-top: 0.4em;
+  overflow-x: auto;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+
+p>code, li>code {
+  padding: 2px 4px;
+  color: var(--highlight-text-color);
+  background: var(--raised-bg-color);
+  border-radius: 3px;
+}
+
+a {
+  color: var(--highlight-text-color);
+}
+
+blockquote {
+  margin: 18px 0px;
+  background: var(--raised-bg-color);
+  border-left: 4px solid var(--highlight-border-color);
+}
+
+blockquote>p {
+  padding: 0.6em 1em;
+}
+
+p, li, table tr th, table tr td {
+  line-height: 1.5em;
+}
+
+table {
+  padding: 0; 
+  border-collapse: collapse;
+}
+table tr {
+  border-top: 1px solid var(--main-border-color);
+  background-color: var(--main-bg-color);
+  margin: 0;
+  padding: 0; 
+}
+table thead tr {
+  background-color: var(--raised-bg-color); 
+}
+table tr:nth-child(2n) {
+  background-color: var(--raised-bg-color); 
+}
+table tr th {
+  font-weight: bold;
+  border: 1px solid var(--main-border-color);
+  text-align: left;
+  margin: 0;
+  padding: 0.6em 1em; 
+}
+table tr td {
+  border: 1px solid var(--main-border-color);
+  text-align: left;
+  margin: 0;
+  padding: 0.6em 1em; 
+}
+table tr th :first-child, table tr td :first-child {
+  margin-top: 0; 
+}
+table tr th :last-child, table tr td :last-child {
+  margin-bottom: 0; 
+}
+
+ul,ol {
+  margin-bottom: 1em;
+  margin-top: 0.4em;
+  padding-inline-start: 1.2em;
+}
