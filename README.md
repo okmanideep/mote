@@ -1,6 +1,9 @@
 # Mote
 Markdown Server for notes and other md files
 
+## Demo
+https://user-images.githubusercontent.com/5300499/209446035-d8c35a0e-afa7-4196-9e68-4899c56bf4f7.mp4
+
 ## Configuration
 ```json
 {
