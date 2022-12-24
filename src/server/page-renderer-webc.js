@@ -45,7 +45,6 @@ class WebCPageRenderer {
   }
 
   async esbuildTransform(content) {
-    console.log({content})
     let tmpDir
     let finalJs
     try {

@@ -1,36 +1,22 @@
-<p>🌝</p>
-<style>
-  theme-switcher {
+<button>🌝</button>
+<style webc:scoped>
+  :host {
     position: fixed;
     top: 0;
     right: 0;
     padding: 1.4em;
   }
-  theme-switcher p {
+  :host button {
     font: inherit;
-    display: block;
     margin: 0;
-    font-size: 1.4em;
+    font-size: 1.2em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform .2s ease-in-out;
   }
-
-  body {
-    --main-bg-color: #22262c;
-    --main-text-color: #ffffff;
-    --heading-text-color: #f7f7f7;
-    --main-border-color: #333333;
-    --highlight-text-color: #61aeee;
-    --highlight-border-color: #218EE8;
-    --raised-bg-color: #282c34;
-  }
-
-  body[data-theme="light"] {
-    --main-bg-color: #ffffff;
-    --main-text-color: #343434;
-    --heading-text-color: #434343;
-    --main-border-color: #d7d7d7;
-    --highlight-text-color: #1268ae;
-    --highlight-border-color: #218EE8;
-    --raised-bg-color: #f7f7f7;
+  :host button:hover, :host button:active {
+    transform: scale(1.1)
   }
 </style>
 <script>
@@ -43,25 +29,25 @@ window.customElements.define("theme-switcher", class extends HTMLElement {
     this.body = document.querySelector("body") 
     this.setTheme('dark')
     this.themeChangeObserver = new MutationObserver(this.onThemeChange)
-    this.template = this.querySelector("p")
+    this.button = this.querySelector("button")
   }
   connectedCallback() {
-    this.template.addEventListener('click', this.toggleTheme)
+    this.button.addEventListener('click', this.toggleTheme)
 
     this.themeChangeObserver.observe(this.body, {
       attributeFilter: ['data-theme']
     })
   }
   disconnectedCallback() {
-    this.template.removeEventListener('click', this.toggleTheme)
+    this.button.removeEventListener('click', this.toggleTheme)
     this.themeChangeObserver.disconnect()
   }
   onThemeChange() {
     let theme = this.body.getAttribute('data-theme')
     if (theme === 'light') {
-      this.template.innerHTML = "🌚"
+      this.button.innerHTML = "🌚"
     } else {
-      this.template.innerHTML = "🌝"
+      this.button.innerHTML = "🌝"
     }
   }
   toggleTheme() {
