@@ -1,4 +1,51 @@
+import mermaid from 'mermaid'
+
+const THEME_VARIABLES = {
+  'dark': {
+      'fontFamily': '"Jetbrains Mono", monospace',
+      'background': '#22262C',
+      'mainBkg': '#282C34',
+      'primaryBorderColor': '#9AA2B1',
+      'actorBorder': '#9AA2B1',
+      'edgeLabelBackground': '#424856'
+  },
+  'light': {
+      'fontFamily': '"Jetbrains Mono", monospace',
+  }
+}
+
+function _initialize(startOnLoad = true) {
+  let body = document.querySelector('body')
+
+  let theme = body.getAttribute('data-theme')
+  if (!theme) {
+    theme = 'dark'
+  }
+
+  console.log(`Initializing mermaid with ${theme} theme`)
+  mermaid.initialize(
+    {
+      startOnLoad,
+      theme,
+      themeVariables: THEME_VARIABLES[theme]
+    }
+  )
+}
+
+function _onContentChange() {
+  // re processes all mermaid code blocks
+  _initialize(false)
+  mermaid.init('.mermaid')
+}
+
+let diagrams = {
+  initialize: _initialize,
+  onContentChange: _onContentChange
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+  diagrams.initialize()
+
   const path = window.location.pathname
   const ws = new WebSocket(`ws://localhost:{{WEBSOCKET_PORT}}${path}`)
   ws.onopen = () => {
@@ -10,7 +57,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (payload.type === 'update') {
       const contentDiv = document.querySelector('.content')
+
+      // record scrollTop to restore after diagrams are processed
+      let scrollTop = document.documentElement.scrollTop
+
       contentDiv.innerHTML = payload.data.contents
+      diagrams.onContentChange()
+
+      // restore the scroll position of the document after content changes
+      // normally we don't have to do this, but since the mermaid diagrams
+      // are processed and swapped(code -> svg) on the browser, there is
+      // that occurs after scrolling past one or more diagrams
+      document.documentElement.scrollTop = scrollTop
     } else if (payload.type === 'error') {
       console.error(payload.data.message)
     }

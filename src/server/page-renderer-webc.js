@@ -33,32 +33,25 @@ class WebCPageRenderer {
     this.websocketPort = websocketPort
     this.pageC = new WebC()
     this.pageC.setBundlerMode(true)
+    this.esbuildTransform = this.esbuildTransform.bind(this)
+    this.pageC.setTransform("esbuild", this.esbuildTransform)
     // https://github.com/11ty/webc/issues/92
     // normalized path is required for path provided to `defineComponents`
     this.pageC.defineComponents(normalizePath(componentsPath()))
     this.pageC.setInputPath(pageInputPath())
-    console.log({globalComponents: this.pageC.globalComponents})
 
     this.indexC = new WebC()
     this.indexC.setInputPath(indexInputPath())
   }
 
-  async getCompiledResults() {
-    if (this.compiled) {
-      return this.compiled
-    }
-
-    let { html, css, js } = await this.pageC.compile()
-
-    let finalCss = cssmin(css.join("\n"))
-    let webcBundledJs = [...js].join("\n")
-
+  async esbuildTransform(content) {
+    console.log({content})
     let tmpDir
     let finalJs
     try {
       tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mote'))
-      let jsPath = path.join(tmpDir, 'webc-bundled.js')
-      await fs.writeFile(jsPath, webcBundledJs)
+      let jsPath = path.join(tmpDir, 'input.js')
+      await fs.writeFile(jsPath, content)
       let buildOutput = esbuild.buildSync({
         entryPoints: [jsPath],
         write: false,
@@ -72,8 +65,22 @@ class WebCPageRenderer {
     } catch (e) {
       console.error(e)
     } finally {
-      fs.rm(tmpDir, {recursive: true})
+      fs.rm(tmpDir, { recursive: true })
     }
+
+    return finalJs
+  }
+
+  async getCompiledResults() {
+    if (this.compiled) {
+      return this.compiled
+    }
+
+    let { html, css, js } = await this.pageC.compile()
+
+    let finalCss = cssmin(css.join("\n"))
+    let finalJs = [...js].join("\n")
+
 
     this.compiled = {
       html,
