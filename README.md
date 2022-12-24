@@ -4,6 +4,13 @@ Markdown Server for notes and other md files
 ## Demo
 https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-bb4a-0476602cb5a3.mp4
 
+## Features
+* Syntax highlighting for code blocks
+* Diagrams using `mermaid` code blocks [similar to Github](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams)
+* Light and Dark themes along with a switch
+* Live Preview
+* Works for any markdown file anywhere in the disk, cleaner URLs for files in `motes_dir`
+
 ## Configuration
 ```json
 {
@@ -21,7 +28,7 @@ MacOs: `~/Library/Preferences/mote/config.json`
 * `git clone git@github.com:okmanideep/mote`
 * `cd mote`
 * `npm i` (install all dependencies)
-* `npm i -g`
+* `npm i -g` (install the cli globally)
 
 ## Starting Mote
 `mote start`
