@@ -2,6 +2,7 @@
 
 body {
   background-color: var(--main-bg-color);
+  transition: background-color .2s ease-in;
 }
 
 .content {
