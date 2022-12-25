@@ -1,5 +1,8 @@
 <button>🌝</button>
 <style webc:scoped>
+  :host:not(:defined) {
+    display: none;
+  }
   :host {
     position: fixed;
     top: 0;
@@ -20,7 +23,7 @@
   }
 </style>
 <script>
-window.customElements.define("theme-switcher", class extends HTMLElement {
+window.customElements.define("theme-switch", class extends HTMLElement {
   constructor(...args) {
     super(...args)
     this.toggleTheme = this.toggleTheme.bind(this)
