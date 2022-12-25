@@ -53,5 +53,5 @@ nnoremap gn <cmd>OpenMote<CR>
 * `mote stop`
 
 ## URL Schema
-Files in `motes_dir` -> `http://localhost:${site_port}/filename`
+Files in `motes_dir` -> `http://localhost:${site_port}/filename`  
 Other files -> `http://localhost:${site_port}/p/full%2Fpath%2Fto%2Ffile.md`
