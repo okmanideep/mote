@@ -19,8 +19,8 @@ https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-b
   "motes_dir": "/Users/okmanideep/Dropbox/notes"
 }
 ```
-Windows: `~/AppData/Local/mote/config.json`
-Linux: `~/.config/mote/config.json`
+Windows: `~/AppData/Local/mote/config.json`  
+Linux: `~/.config/mote/config.json`  
 MacOs: `~/Library/Preferences/mote/config.json`
 
 ## Installation
