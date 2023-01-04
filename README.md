@@ -11,7 +11,18 @@ https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-b
 * Live Preview
 * Works for any markdown file anywhere in the disk, cleaner URLs for files in `motes_dir`
 
-## Configuration
+## Installation
+* `git clone git@github.com:okmanideep/mote`
+* `cd mote`
+* `npm i` (install all dependencies)
+* `npm i -g` (install the cli globally)
+
+## Starting Mote
+`mote start`
+
+> **Note**: Interactively configures mote the first time
+
+#### Configuration
 ```json
 {
   "site_port": 3000,
@@ -22,16 +33,6 @@ https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-b
 Windows: `~/AppData/Local/mote/config.json`  
 Linux: `~/.config/mote/config.json`  
 MacOs: `~/Library/Preferences/mote/config.json`
-
-## Installation
-* Add configuration file as described above
-* `git clone git@github.com:okmanideep/mote`
-* `cd mote`
-* `npm i` (install all dependencies)
-* `npm i -g` (install the cli globally)
-
-## Starting Mote
-`mote start`
 
 ## Opening a file
 `mote open path/to/file.md`
