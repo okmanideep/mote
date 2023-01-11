@@ -47,8 +47,26 @@ endfunction
 
 command! OpenMote :call <SID>OpenMote()
 " map to your preferred key combo
-nnoremap gn <cmd>OpenMote<CR>
+nnoremap gm <cmd>OpenMote<CR>
 ```
+
+<details>
+<summary>Expand for Lua Configuration</summary>
+
+```lua
+local open_mote = function ()
+	local filename = vim.fn.expand('%:t')
+	vim.fn.system({
+		"mote",
+		"open",
+		filename,
+	})
+end
+
+vim.keymap.set('n', 'gm', open_mote, { desc = "Open in Mote" })
+```
+
+</details>
 
 ## Stopping Mote
 * `mote stop`
