@@ -30,7 +30,7 @@ window.customElements.define("theme-switch", class extends HTMLElement {
     this.onThemeChange = this.onThemeChange.bind(this)
 
     this.body = document.querySelector("body") 
-    this.setTheme('dark')
+    this.setTheme('light')
     this.themeChangeObserver = new MutationObserver(this.onThemeChange)
     this.button = this.querySelector("button")
   }

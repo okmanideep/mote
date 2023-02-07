@@ -1,4 +1,4 @@
-body {
+body[data-theme="dark"] {
   --main-bg-color: #22262c;
   --main-text-color: #ffffff;
   --heading-text-color: #f7f7f7;
@@ -8,7 +8,7 @@ body {
   --raised-bg-color: #282c34;
 }
 
-body[data-theme="light"] {
+body {
   --main-bg-color: #ffffff;
   --main-text-color: #343434;
   --heading-text-color: #434343;
