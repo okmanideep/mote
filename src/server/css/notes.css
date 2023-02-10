@@ -68,6 +68,7 @@ pre {
   margin-bottom: 1em;
   margin-top: 0.4em;
   overflow-x: auto;
+  tab-size: 2;
 }
 
 code {
