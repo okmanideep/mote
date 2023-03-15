@@ -16,6 +16,7 @@
   "dependencies": {
     "@11ty/webc": "^0.8.0",
     "commander": "^9.4.1",
+    "crypto-js": "^4.1.1",
     "cssmin": "^0.4.3",
     "env-paths": "^3.0.0",
     "esbuild": "^0.13.14",
@@ -25,7 +26,7 @@
     "liquidjs": "^9.28.5",
     "markdown-it": "^12.2.0",
     "markdown-it-checkbox": "^1.1.0",
-    "mermaid": "^9.1.6",
+    "mermaid": "^10.0.2",
     "node-fetch": "^3.2.10",
     "normalize-path": "^3.0.0",
     "open": "^8.4.0",
