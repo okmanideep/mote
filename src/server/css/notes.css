@@ -15,8 +15,8 @@ body {
 
 @media only screen and (min-device-width: 960px) {
   .content {
-    width: 880px;
-    font-size: 1.2rem;
+    width: 750px;
+    font-size: 1.3rem;
   }
 }
 
@@ -98,7 +98,7 @@ blockquote>p {
 }
 
 p, li, table tr th, table tr td {
-  line-height: 1.5em;
+  line-height: 1.6em;
 }
 
 table {
