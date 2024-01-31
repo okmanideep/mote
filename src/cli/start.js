@@ -3,9 +3,7 @@ import { fork } from 'node:child_process'
 import envPaths from 'env-paths'
 import fs from 'node:fs'
 import path from 'node:path'
-import os from 'node:os'
 import * as url from 'url'
-import prompt from 'prompt'
 import fetch from 'node-fetch'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
@@ -20,7 +18,7 @@ async function start() {
   const configExists = await conf.exists()
 
   if (!configExists) {
-    await _setupConfig()
+    await conf.setup()
   }
 
   const config = await conf.get()
@@ -41,41 +39,6 @@ async function _isRunning(config) {
   } catch(e) {
     return false
   }
-}
-
-async function _setupConfig() {
-  prompt.start()
-  const { sitePort, websocketPort, motesDir } = await prompt.get({
-    properties: {
-      sitePort: {
-        description: 'Website Port',
-        required: true,
-        default: 3000,
-        type: 'number',
-        conform: (value) => {
-          return value > 1023
-        }
-      },
-      websocketPort: {
-        description: 'Browser <-> Mote communication port for live changes',
-        default: 8383,
-        type: 'number',
-        conform: (value) => {
-          return value > 1023
-        }
-      },
-      motesDir: {
-        description: 'Your markdown notes directory',
-        type: 'string',
-        required: true,
-        before: (value) => {
-          return value.replace('~', os.homedir())
-        }
-      }
-    }
-  })
-
-  await conf.write({ sitePort, websocketPort, motesDir })
 }
 
 async function _spawnServer(config) {

@@ -4,6 +4,7 @@ import { program } from 'commander'
 import start from './start.js'
 import stop from './stop.js'
 import open from './open.js'
+import config from './config.js'
 
 async function restart() {
   await stop()
@@ -30,5 +31,10 @@ program
   .description('Open a markdown file in browser')
   .argument('<path>', 'path of the markdown file')
   .action(open)
+
+program
+  .command('config')
+  .description('Setup the config file')
+  .action(config)
 
 program.parse()

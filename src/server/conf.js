@@ -19,6 +19,8 @@ Example configuration
 import path from "node:path"
 import envPaths from "env-paths"
 import fs from "node:fs/promises"
+import prompt from 'prompt'
+import os from 'node:os'
 
 async function getConfig() {
   const configFilePath = _configFilePath()
@@ -72,6 +74,53 @@ async function writeConfig({sitePort, websocketPort, motesDir }) {
   await fs.writeFile(configFilePath, configAsJsonString, 'utf8')
 }
 
+async function setupConfig() {
+  prompt.start()
+  let current = {sitePort: 3000, motesDir: '~/Documents/notes/', websocketPort: 8383}
+  try {
+	  const currentConfig = await getConfig()
+    current = {
+      sitePort: currentConfig.site_port,
+      motesDir: currentConfig.motes_dir,
+      websocketPort: currentConfig.websocket_port
+    }
+	} catch (e) {
+    // do nothing
+  }
+  const { sitePort, websocketPort, motesDir } = await prompt.get({
+    properties: {
+      sitePort: {
+        description: 'Website Port',
+        required: true,
+        default: current.sitePort,
+        type: 'number',
+        conform: (value) => {
+          return value > 1023
+        }
+      },
+      websocketPort: {
+        description: 'Websocket Port for Browser<->Server Communication',
+        default: current.websocketPort,
+        type: 'number',
+        conform: (value) => {
+          return value > 1023
+        }
+      },
+      motesDir: {
+        description: 'Notes Directory',
+        type: 'string',
+        required: true,
+        default: current.motesDir,
+        before: (value) => {
+          return value.replace('~', os.homedir())
+        }
+      }
+    }
+  })
+
+  await writeConfig({ sitePort, websocketPort, motesDir })
+}
+
 function _configFilePath() {
   const paths = envPaths('mote', { suffix: '' })
   return path.join(paths.config, "config.json")
@@ -79,6 +128,6 @@ function _configFilePath() {
 
 export default {
   get: getConfig,
-  write: writeConfig,
-  exists: doesValidConfigExists
+  exists: doesValidConfigExists,
+  setup: setupConfig
 }
