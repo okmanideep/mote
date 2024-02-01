@@ -1,9 +1,12 @@
 import conf from '../server/conf.js'
 import path from 'node:path'
 import open from 'open'
+import start from './start.js'
 
 async function openFile(relativePath) {
   const config = await conf.get()
+
+  await start({disableLogging: true})
 
   const fullPath = path.resolve(relativePath)
 

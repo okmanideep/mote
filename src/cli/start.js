@@ -14,7 +14,7 @@ function serverCwd() {
   return path.resolve(__dirname, '..', '..')
 }
 
-async function start() {
+async function start({ disableLogging = false } = {}) {
   const configExists = await conf.exists()
 
   if (!configExists) {
@@ -26,7 +26,7 @@ async function start() {
 
   if (!isAlreadyRunning) {
     await _spawnServer(config)
-  } else {
+  } else if (!disableLogging) {
     console.log('Mote is already running ...')
   }
 }
