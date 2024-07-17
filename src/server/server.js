@@ -6,6 +6,9 @@ import conf from './conf.js'
 import mdRenderer from './md-renderer.js'
 import PageRenderer from './page-renderer-webc.js'
 import CryptoJS from 'crypto-js'
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 async function start() {
 	const config = await conf.get()
@@ -24,9 +27,7 @@ async function start() {
 		res.sendStatus(200)
 	})
 
-	app.get('/favicon.ico', async function(_, res) {
-		res.sendStatus(404)
-	})
+	app.use(express.static(path.join(__dirname,'assets')))
 
 	app.get('/p/:path', async function(req, res) {
 		const filePath = req.params['path']
