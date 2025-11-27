@@ -18,7 +18,9 @@ async function start() {
   const pageRenderer = new PageRenderer(WEBSOCKET_PORT)
 
   const mdFilePath = (filename) => {
-    return path.join(MOTES_DIR, `${filename}.md`)
+    // add extension if not already present
+    const fileNameWithExt = filename.endsWith('.md') ? filename : filename + '.md'
+    return path.join(MOTES_DIR, fileNameWithExt)
   }
 
   const app = express()
