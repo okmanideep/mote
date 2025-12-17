@@ -91,12 +91,12 @@ class WebCPageRenderer {
   }
 
   async render(path) {
-    let content = mdRenderer.render(path)
+    let { content, title } = mdRenderer.render(path)
     let { html, css, js } = await this.getCompiledResults()
 
     let { html: finalHtml } = await this.indexC.compile({
       data: {
-        html, css, js, content
+        html, css, js, content, title
       }
     })
 

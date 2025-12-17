@@ -69,7 +69,8 @@ document.addEventListener("DOMContentLoaded", function() {
 				isAtEnd = true
 			}
 
-			contentDiv.innerHTML = payload.data.contents
+			contentDiv.innerHTML = payload.data.content
+      document.title = payload.data.title
 			diagrams.onContentChange()
 
 			// restore the scroll position of the document after content changes

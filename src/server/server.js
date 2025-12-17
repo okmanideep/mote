@@ -75,10 +75,10 @@ async function start() {
     let prevContentHash = ''
     fs.watchFile(file, { persistent: true, interval: 300 }, async () => {
       try {
-        const contents = mdRenderer.render(file)
-        const newContentHash = CryptoJS.MD5(contents).toString()
+        const { content, title } = mdRenderer.render(file)
+        const newContentHash = CryptoJS.MD5(content).toString()
         if (newContentHash !== prevContentHash) {
-          ws.send(JSON.stringify({ type: 'update', data: { contents } }))
+          ws.send(JSON.stringify({ type: 'update', data: { content, title } }))
           prevContentHash = newContentHash
         }
       } catch (e) {
@@ -94,8 +94,8 @@ async function start() {
       const payload = JSON.parse(msg.data)
 
       if (payload.type === 'theme-changed') {
-        const contents = mdRenderer.render(file) 
-        ws.send(JSON.stringify({ type: 'update', data: { contents } }))
+        const { content, title } = mdRenderer.render(file) 
+        ws.send(JSON.stringify({ type: 'update', data: { content, title } }))
       }
     }
   })

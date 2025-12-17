@@ -25,7 +25,19 @@ function renderer() {
 
 function _renderHTML(md, file) {
   const markdown = fs.readFileSync(file).toString()
-  return md.render(markdown)
+  const title = _firstHeading(markdown)
+  return { content: md.render(markdown), title: title ? title : "Notes" }
+}
+
+function _firstHeading(markdown) {
+  // get from first line that starts with #
+  const lines = markdown.split('\n')
+  const headingLine = lines.find(line => line.startsWith('#'))
+  if (headingLine) {
+    return headingLine.replace(/^#+\s*/, '').trim()
+  }
+
+  return null
 }
 
 function _highlight(md, str, lang) {
