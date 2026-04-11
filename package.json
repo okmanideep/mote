@@ -25,6 +25,7 @@
     "highlight.js": "^11.3.1",
     "liquidjs": "^9.28.5",
     "markdown-it": "^12.2.0",
+    "markdown-it-anchor": "^9.2.0",
     "markdown-it-checkbox": "^1.1.0",
     "mermaid": "^11.12.2",
     "node-fetch": "^3.2.10",

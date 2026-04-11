@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import MarkdownItChechbox from 'markdown-it-checkbox'
+import MarkdownItAnchor from 'markdown-it-anchor'
 import hljs from 'highlight.js'
 import fs from 'node:fs'
 
@@ -16,7 +17,9 @@ function renderer() {
 
   hljs.registerAliases("proto", { languageName: 'protobuf' })
 
-  _md = MarkdownIt(options).use(MarkdownItChechbox)
+  _md = MarkdownIt(options)
+    .use(MarkdownItChechbox)
+    .use(MarkdownItAnchor)
 
   return {
     render: (file) => _renderHTML(_md, file)
