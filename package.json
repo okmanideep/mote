@@ -27,7 +27,7 @@
     "markdown-it": "^12.2.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-checkbox": "^1.1.0",
-    "mermaid": "^11.12.2",
+    "mermaid": "^11.14.0",
     "node-fetch": "^3.2.10",
     "normalize-path": "^3.0.0",
     "open": "^8.4.0",
