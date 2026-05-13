@@ -3,6 +3,7 @@ import MarkdownItChechbox from 'markdown-it-checkbox'
 import MarkdownItAnchor from 'markdown-it-anchor'
 import hljs from 'highlight.js'
 import fs from 'node:fs'
+import zigHighlight from './zig-hightlight.js'
 
 function renderer() {
   let _md
@@ -16,6 +17,7 @@ function renderer() {
   }
 
   hljs.registerAliases("proto", { languageName: 'protobuf' })
+  hljs.registerLanguage("zig", zigHighlight)
 
   _md = MarkdownIt(options)
     .use(MarkdownItChechbox)
