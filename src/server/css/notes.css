@@ -33,31 +33,31 @@ h1 {
 
 h2 {
   font-size: 1.8em;
-  margin: 1.6em 0 0.8em 0;
+  margin: 1.6em 0 0.4em 0;
 }
 
 h3 {
   font-size: 1.6em;
-  margin: 1em 0 0.5em 0;
+  margin: 1em 0 0.3em 0;
 }
 
 h4 {
   font-size: 1.4em;
-  margin: 1em 0 0.5em 0;
+  margin: 1em 0 0.3em 0;
 }
 
 h5 {
   font-size: 1.2em;
-  margin: 0.8em 0 0.4em 0;
+  margin: 0.8em 0 0.3em 0;
 }
 
 h6 {
   font-size: 1.1em;
-  margin-top: 0.8em 0 0.4em 0;
+  margin: 0.8em 0 0.3em 0;
 }
 
 p {
-  margin: 1em 0 0.5em 0;
+  margin: 0 0 0.8em 0;
 }
 
 pre {
@@ -136,7 +136,15 @@ table tr th :last-child, table tr td :last-child {
 }
 
 ul,ol {
-  margin-bottom: 1em;
-  margin-top: 0.4em;
+  margin-bottom: 0.8em;
+  margin-top: 0;
   padding-inline-start: 1.2em;
+}
+
+h1 + h2, h2 + h3, h3 + h4, h4 + h5, h5 + h6 {
+  margin-top: 0.6em;
+}
+
+p + ul, p + ol {
+  margin-top: -0.7em;
 }
