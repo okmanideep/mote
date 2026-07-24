@@ -23,6 +23,35 @@ async function start() {
     return path.join(MOTES_DIR, fileNameWithExt)
   }
 
+  const resolveMarkdownFileFromPagePath = (pagePath) => {
+    if (pagePath.startsWith('/p/')) {
+      return decodeURIComponent(pagePath.substring(3))
+    }
+
+    const name = decodeURIComponent(pagePath.substring(1))
+    return mdFilePath(name)
+  }
+
+  const resolveImageFileFromRequest = (req) => {
+    const referer = req.get('referer')
+    if (!referer) {
+      return null
+    }
+
+    const refererUrl = new URL(referer)
+    const markdownFile = resolveMarkdownFileFromPagePath(refererUrl.pathname)
+    const markdownDir = path.dirname(markdownFile)
+
+    let imagePath = decodeURIComponent(req.path)
+    if (refererUrl.pathname.startsWith('/p/') && imagePath.startsWith('/p/')) {
+      imagePath = imagePath.substring(3)
+    } else {
+      imagePath = imagePath.substring(1)
+    }
+
+    return path.resolve(markdownDir, imagePath)
+  }
+
   const app = express()
 
   app.get('/status', async function(_, res) {
@@ -30,6 +59,17 @@ async function start() {
   })
 
   app.use(express.static(path.join(__dirname,'assets')))
+
+  app.get(/.*\.(png|jpg|jpeg|gif|webp|svg)$/, function(req, res) {
+    const imageFile = resolveImageFileFromRequest(req)
+
+    if (!imageFile || !fs.existsSync(imageFile)) {
+      res.sendStatus(404)
+      return
+    }
+
+    res.sendFile(imageFile)
+  })
 
   app.get('/p/:path', async function(req, res) {
     const filePath = req.params['path']

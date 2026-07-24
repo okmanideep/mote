@@ -97,6 +97,11 @@ a {
   color: var(--highlight-text-color);
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 blockquote {
   margin: 18px 0px;
   background: var(--raised-bg-color);
