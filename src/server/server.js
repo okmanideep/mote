@@ -6,11 +6,13 @@ import conf from './conf.js'
 import mdRenderer from './md-renderer.js'
 import PageRenderer from './page-renderer-webc.js'
 import CryptoJS from 'crypto-js'
+import ensureFonts from './font-downloader.js'
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
 async function start() {
+  await ensureFonts()
   const config = await conf.get()
   const SITE_PORT = config['site_port']
   const MOTES_DIR = config['motes_dir']

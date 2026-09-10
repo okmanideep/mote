@@ -9,6 +9,8 @@ import fetch from 'node-fetch'
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const timeout = ms => new Promise(res => setTimeout(res, ms))
+const startupTimeout = 30_000
+const startupPollInterval = 250
 
 function serverCwd() {
   return path.resolve(__dirname, '..', '..')
@@ -55,9 +57,9 @@ async function _spawnServer(config) {
 
   let isRunning = await _isRunning(config)
   let waitTime = 0
-  while (!isRunning && waitTime < 1000) {
-    await timeout(100)
-    waitTime += 100
+  while (!isRunning && waitTime < startupTimeout) {
+    await timeout(startupPollInterval)
+    waitTime += startupPollInterval
 
     isRunning = await _isRunning(config)
   }
