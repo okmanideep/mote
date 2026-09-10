@@ -1,0 +1,24 @@
+.gitignore
+  h_ed7ef8ca79e302 3
+src/cli/start.js
+  h_ed7ef8ca79e302 12-13,60-62
+src/server/FONTS-LICENSES.md
+  h_ed7ef8ca79e302 1-7
+src/server/css/fonts.css
+  h_ed7ef8ca79e302 1-307
+src/server/font-downloader.js
+  h_ed7ef8ca79e302 1-72
+src/server/server.js
+  h_ed7ef8ca79e302 9,15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "dd7c3890297f12773f8fbadd80e8d19a35641385",
+  "prompts": {},
+  "humans": {
+    "h_ed7ef8ca79e302": {
+      "author": "Manideep Polireddi <okmanideep@users.noreply.github.com>"
+    }
+  }
+}
