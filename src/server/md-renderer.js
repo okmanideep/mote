@@ -29,9 +29,15 @@ function renderer() {
 }
 
 function _renderHTML(md, file) {
-  const markdown = fs.readFileSync(file).toString()
+  const markdown = _stripFrontMatter(fs.readFileSync(file).toString())
   const title = _firstHeading(markdown)
   return { content: md.render(markdown), title: title ? title : "Notes" }
+}
+
+function _stripFrontMatter(markdown) {
+  // Front matter is only valid at the beginning of a document. Requiring its
+  // closing delimiter prevents ordinary horizontal rules from being removed.
+  return markdown.replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?^(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/m, '')
 }
 
 function _firstHeading(markdown) {
