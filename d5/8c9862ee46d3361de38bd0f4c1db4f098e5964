@@ -1,0 +1,26 @@
+package-lock.json
+  h_ed7ef8ca79e302 34-36,208-223,2391-2419,3006-3014,4561-4575
+package.json
+  h_ed7ef8ca79e302 9-12,39-41
+playwright.config.js
+  h_ed7ef8ca79e302 1-8
+scripts/run-e2e.js
+  h_ed7ef8ca79e302 1-17
+tests/e2e/notes.spec.js
+  h_ed7ef8ca79e302 1-30
+tests/e2e/server.fixture.js
+  h_ed7ef8ca79e302 1-27
+tests/unit/md-renderer.test.js
+  h_ed7ef8ca79e302 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d58c9862ee46d3361de38bd0f4c1db4f098e5964",
+  "prompts": {},
+  "humans": {
+    "h_ed7ef8ca79e302": {
+      "author": "Manideep Polireddi <okmanideep@users.noreply.github.com>"
+    }
+  }
+}
