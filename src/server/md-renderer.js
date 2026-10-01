@@ -35,9 +35,19 @@ function _renderHTML(md, file) {
 }
 
 function _stripFrontMatter(markdown) {
-  // Front matter is only valid at the beginning of a document. Requiring its
-  // closing delimiter prevents ordinary horizontal rules from being removed.
-  return markdown.replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?^(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/m, '')
+  // Front matter is only valid when its opening delimiter is the first line.
+  // Do not use multiline anchors here: they also match horizontal rules later
+  // in an ordinary Markdown document.
+  const text = markdown.replace(/^\uFEFF/, '')
+  const lines = text.split(/\r?\n/)
+  if (!/^---[\t ]*$/.test(lines[0] ?? '')) return markdown
+
+  const closingLine = lines.findIndex((line, index) =>
+    index > 0 && /^(?:---|\.\.\.)[\t ]*$/.test(line)
+  )
+  if (closingLine === -1) return markdown
+
+  return lines.slice(closingLine + 1).join('\n')
 }
 
 function _firstHeading(markdown) {
