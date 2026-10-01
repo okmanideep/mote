@@ -1,0 +1,14 @@
+src/server/md-renderer.js
+  h_ed7ef8ca79e302 38-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a1b3639efc5c986c186312ea6d3b9c66c1b89d9c",
+  "prompts": {},
+  "humans": {
+    "h_ed7ef8ca79e302": {
+      "author": "Manideep Polireddi <okmanideep@users.noreply.github.com>"
+    }
+  }
+}
