@@ -16,12 +16,16 @@ function nodeModulesPaths() {
   ]
 }
 
-function pageInputPath() {
-  return path.resolve(__dirname, 'page.webc')
+function notePageInputPath() {
+  return path.resolve(__dirname, 'note-page.webc')
 }
 
-function indexInputPath() {
-  return path.resolve(__dirname, 'index.webc')
+function homePageInputPath() {
+  return path.resolve(__dirname, 'home-page.webc')
+}
+
+function layoutInputPath() {
+  return path.resolve(__dirname, 'layout.webc')
 }
 
 function componentsPath() {
@@ -31,17 +35,20 @@ function componentsPath() {
 class WebCPageRenderer {
   constructor(websocketPort) {
     this.websocketPort = websocketPort
-    this.pageC = new WebC()
-    this.pageC.setBundlerMode(true)
+    this.notePageC = new WebC()
+    this.notePageC.setBundlerMode(true)
     this.esbuildTransform = this.esbuildTransform.bind(this)
-    this.pageC.setTransform("esbuild", this.esbuildTransform)
+    this.notePageC.setTransform("esbuild", this.esbuildTransform)
     // https://github.com/11ty/webc/issues/92
     // normalized path is required for path provided to `defineComponents`
-    this.pageC.defineComponents(normalizePath(componentsPath()))
-    this.pageC.setInputPath(pageInputPath())
-
-    this.indexC = new WebC()
-    this.indexC.setInputPath(indexInputPath())
+    this.notePageC.defineComponents(normalizePath(componentsPath()))
+    this.notePageC.setInputPath(notePageInputPath())
+    this.homePageC = new WebC()
+    this.homePageC.setBundlerMode(true)
+    this.homePageC.defineComponents(normalizePath(componentsPath()))
+    this.homePageC.setInputPath(homePageInputPath())
+    this.layoutC = new WebC()
+    this.layoutC.setInputPath(layoutInputPath())
   }
 
   async esbuildTransform(content) {
@@ -70,12 +77,12 @@ class WebCPageRenderer {
     return finalJs
   }
 
-  async getCompiledResults() {
+  async getCompiledNotePage() {
     if (this.compiled) {
       return this.compiled
     }
 
-    let { html, css, js } = await this.pageC.compile()
+    let { html, css, js } = await this.notePageC.compile()
 
     let finalCss = cssmin(css.join("\n"))
     let finalJs = [...js].join("\n")
@@ -92,14 +99,20 @@ class WebCPageRenderer {
 
   async render(path) {
     let { content, title } = mdRenderer.render(path)
-    let { html, css, js } = await this.getCompiledResults()
+    let { html, css, js } = await this.getCompiledNotePage()
 
-    let { html: finalHtml } = await this.indexC.compile({
-      data: {
-        html, css, js, content, title
-      }
+    let { html: finalHtml } = await this.layoutC.compile({
+      data: { html, css, js, content: `<div class="content">${content}</div>`, title }
     })
 
+    return finalHtml
+  }
+
+  async renderHome(lists) {
+    const { html, css, js } = await this.homePageC.compile({ data: lists })
+    const { html: finalHtml } = await this.layoutC.compile({
+      data: { html, css: cssmin(css.join("\n")), js: [...js].join("\n"), content: '', title: 'Mote' }
+    })
     return finalHtml
   }
 }

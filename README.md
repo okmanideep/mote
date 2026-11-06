@@ -20,6 +20,8 @@ https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-b
 ## Starting Mote
 `mote start`
 
+To install the current checkout globally and restart Mote, run `make install`. If Tailscale is installed, connected, and already serving Mote's configured site port, the script temporarily disables and then restores that Serve route around the restart. Otherwise, it leaves Tailscale Serve unchanged.
+
 > **Note**: Interactively configures mote the first time
 
 #### Configuration

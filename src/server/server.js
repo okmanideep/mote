@@ -7,6 +7,8 @@ import mdRenderer from './md-renderer.js'
 import PageRenderer from './page-renderer-webc.js'
 import CryptoJS from 'crypto-js'
 import ensureFonts from './font-downloader.js'
+import envPaths from 'env-paths'
+import { RecentFiles, renderHomeLists } from './recent-files.js'
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -16,6 +18,7 @@ async function start() {
   const config = await conf.get()
   const SITE_PORT = config['site_port']
   const MOTES_DIR = config['motes_dir']
+  const recentFiles = new RecentFiles(path.join(envPaths('mote', { suffix: '' }).data, 'recent-files.json'), MOTES_DIR)
   const WEBSOCKET_PORT = config['websocket_port']
   const pageRenderer = new PageRenderer(WEBSOCKET_PORT)
 
@@ -60,6 +63,15 @@ async function start() {
     res.sendStatus(200)
   })
 
+  app.get('/', async function(_, res) {
+    const lists = await recentFiles.list()
+    res.type('html').send(await pageRenderer.renderHome(renderHomeLists(lists)))
+  })
+
+  app.get('/api/recent-files', async function(_, res) {
+    res.json(await recentFiles.list())
+  })
+
   app.use(express.static(path.join(__dirname,'assets')))
 
   app.get(/.*\.(png|jpg|jpeg|gif|webp|svg)$/, function(req, res) {
@@ -78,7 +90,9 @@ async function start() {
     if (!fs.existsSync(filePath)) {
       res.status(404).send(`<h1>${filePath} not found</h1>`)
     } else {
-      res.send(await pageRenderer.render(filePath))
+      const note = mdRenderer.render(filePath)
+      await recentFiles.recordViewed(filePath, note.title)
+      res.send(await pageRenderer.render(filePath, note))
     }
   })
 
@@ -90,7 +104,9 @@ async function start() {
       console.log(`Could not find ${file}`)
       res.sendStatus(404)
     } else {
-      res.send(await pageRenderer.render(file))
+      const note = mdRenderer.render(file)
+      await recentFiles.recordViewed(file, note.title)
+      res.send(await pageRenderer.render(file, note))
     }
   })
 

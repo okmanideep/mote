@@ -1,67 +1,70 @@
-<button>🌝</button>
+<button type="button" aria-label="Toggle color theme" aria-pressed="false">
+  <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0-7a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0V2a1 1 0 0 0-1-1zm0 17a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1zM2 11a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2H2zm18 0a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2h-2zM5.64 4.22a1 1 0 0 0-1.42 1.42l1.42 1.42a1 1 0 0 0 1.42-1.42L5.64 4.22zm12.72 12.72a1 1 0 0 0-1.42 1.42l1.42 1.42a1 1 0 0 0 1.42-1.42l-1.42-1.42zM19.78 5.64a1 1 0 0 0-1.42-1.42l-1.42 1.42a1 1 0 0 0 1.42 1.42l1.42-1.42zM7.06 18.36a1 1 0 0 0-1.42-1.42l-1.42 1.42a1 1 0 0 0 1.42 1.42l1.42-1.42z"/></svg>
+<svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.37 5.51a7 7 0 0 0 9.12 9.12A9 9 0 1 1 9.37 5.51z"/></svg>
+</button>
+<script>
+  document.querySelectorAll('theme-switch button').forEach(button => {
+    button.addEventListener('click', () => {
+      const dark = document.body.dataset.theme !== 'dark'
+      document.body.dataset.theme = dark ? 'dark' : 'light'
+      button.setAttribute('aria-pressed', String(dark))
+    })
+  })
+</script>
 <style webc:scoped>
-  :host:not(:defined) {
-    display: none;
-  }
   :host {
-    position: fixed;
-    top: 0;
-    right: 0;
-    padding: 1.4em;
+    position: static;
+    padding: 0;
   }
   :host button {
     font: inherit;
     margin: 0;
-    font-size: 1.2em;
     background: none;
     border: none;
     cursor: pointer;
     transition: transform .2s ease-in-out;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: inherit;
+    opacity: .55;
   }
-  :host button:hover, :host button:active {
-    transform: scale(1.1)
+  :host button svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+  }
+  :host button .moon-icon {
+    display: none;
+  }
+  :host button[aria-pressed="true"] .sun-icon {
+    display: none;
+  }
+  :host button[aria-pressed="true"] .moon-icon {
+    display: block;
+  }
+  :host button:focus {
+    outline: none;
+  }
+  :host button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    opacity: 1;
+  }
+  :host button:active {
+    transform: scale(1.1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :host button:hover {
+      transform: scale(1.1);
+      opacity: .85;
+    }
   }
 </style>
-<script>
-window.customElements.define("theme-switch", class extends HTMLElement {
-  constructor(...args) {
-    super(...args)
-    this.toggleTheme = this.toggleTheme.bind(this)
-    this.onThemeChange = this.onThemeChange.bind(this)
-
-    this.body = document.querySelector("body") 
-    this.setTheme('light')
-    this.themeChangeObserver = new MutationObserver(this.onThemeChange)
-    this.button = this.querySelector("button")
-  }
-  connectedCallback() {
-    this.button.addEventListener('click', this.toggleTheme)
-
-    this.themeChangeObserver.observe(this.body, {
-      attributeFilter: ['data-theme']
-    })
-  }
-  disconnectedCallback() {
-    this.button.removeEventListener('click', this.toggleTheme)
-    this.themeChangeObserver.disconnect()
-  }
-  onThemeChange() {
-    let theme = this.body.getAttribute('data-theme')
-    if (theme === 'light') {
-      this.button.innerHTML = "🌚"
-    } else {
-      this.button.innerHTML = "🌝"
-    }
-  }
-  toggleTheme() {
-    if (this.body.getAttribute('data-theme') === 'dark') {
-      this.setTheme('light')
-    } else {
-      this.setTheme('dark')
-    }
-  }
-  setTheme(theme) {
-    this.body.setAttribute("data-theme", theme)
-  }
-})
-</script>
