@@ -1,6 +1,6 @@
 # WebC best practices
 
-Mote uses `@11ty/webc` 0.8.0. Keep components reusable by colocating their markup, scoped styles, and browser behavior in `.webc` files.
+Mote uses `@11ty/webc` 0.11.4. Keep components reusable by colocating their markup, scoped styles, and browser behavior in `.webc` files.
 
 ## Mote file names
 
@@ -16,6 +16,7 @@ The renderer compiles a page template first, then puts its output into `layout.w
 - Use `<style webc:scoped>` for component styles. WebC rewrites `:host` to the component’s generated class.
 - Pass content through component attributes and slots. Use `@text` for escaped text; reserve `@raw` for trusted HTML that is intentionally emitted without escaping or WebC processing.
 - In bundler mode, WebC collects component `<script>`, `<style>`, and local stylesheet links into page bundles. Keep the layout bundle outlets marked `webc:keep`.
-- Check the installed WebC version before using newer directives. In particular, `webc:setup` and several dynamic attributes require WebC 0.9.0 or newer.
+- In child components, read global data through `$data`; WebC 0.11.0 stopped exposing it as top-level variables to prevent global data from leaking into component data.
+- Check the installed WebC version before using newer directives. `webc:setup`, `@attributes`, and dynamic attributes require WebC 0.9.0 or newer; `webc:for`, `webc:elseif`, and `webc:else` require WebC 0.10.0 or newer.
 
 References: [WebC documentation](https://www.11ty.dev/docs/languages/webc/), especially [scoped CSS](https://www.11ty.dev/docs/languages/webc/#webcscoped), [slots](https://www.11ty.dev/docs/languages/webc/#slots), and [bundled CSS and JS](https://www.11ty.dev/docs/languages/webc/#css-and-js-bundler-mode).
