@@ -4,6 +4,7 @@ import { program } from 'commander'
 import start from './start.js'
 import stop from './stop.js'
 import open from './open.js'
+import link from './link.js'
 import config from './config.js'
 
 async function restart() {
@@ -31,6 +32,12 @@ program
   .description('Open a markdown file in browser')
   .argument('<path>', 'path of the markdown file')
   .action(open)
+
+program
+  .command('link')
+  .description('Print localhost and available Tailscale links for a markdown file')
+  .argument('<path>', 'path of the markdown file')
+  .action(link)
 
 program
   .command('config')

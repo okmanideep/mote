@@ -70,6 +70,16 @@ vim.keymap.set('n', 'gm', open_mote, { desc = "Open in Mote" })
 
 </details>
 
+## Getting a link
+`mote link path/to/file.md`
+
+Starts Mote if needed and prints the localhost URL plus any matching Tailscale Serve
+HTTP/HTTPS URLs, without opening a browser. Paths may be absolute or relative to the
+current directory. Tailscale links are discovered with `tailscale serve status --json`;
+the command does not change Serve configuration. If Tailscale is unavailable or no
+route proxies Mote's configured port, it prints the localhost URL with a diagnostic.
+The host must remain running and connected for other tailnet devices to view the file.
+
 ## Stopping Mote
 * `mote stop`
 
