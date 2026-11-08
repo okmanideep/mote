@@ -2,7 +2,7 @@
 <div class="wrap">
   <header>
     <div class="brand"><img src="/favicon.png?v=2" alt=""><h1>mote</h1></div>
-    <theme-switch></theme-switch>
+    <div class="header-actions"><search></search><theme-switch></theme-switch></div>
   </header>
   <main>
     <file-list kind="viewed"><span slot="title">Recently viewed</span><template webc:nokeep @raw="viewedHtml"></template><p class="empty" data-empty="viewed" hidden>Nothing here yet.</p></file-list>
@@ -16,6 +16,7 @@
   .wrap{max-width:980px;margin:auto;padding:48px 24px 64px}
   header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:4px 0 52px}
   .brand{display:flex;align-items:center;gap:14px}
+  .header-actions{display:flex;align-items:center;gap:2px}
   header img{width:38px;height:38px}
   h1{font-family:Newsreader,serif;font-size:42px;line-height:1;margin:0;font-style:italic;font-weight:600;letter-spacing:-2px}
   main{display:grid;grid-template-columns:1fr 1fr;gap:40px}

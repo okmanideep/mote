@@ -64,6 +64,32 @@ test('serves and renders a markdown note in the browser', async ({ page }) => {
   await expect(page.locator('[data-recent-list="viewed"] li').first().locator('span')).toHaveText('Welcome')
 })
 
+test('updates an open note when its markdown file changes', async ({ page }) => {
+  const notePath = path.join(dir, 'live-update.md')
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  const websocket = page.waitForEvent('websocket')
+  try {
+    await fs.writeFile(notePath, '# Before edit\n\nOriginal text.')
+    await page.goto(`${server.url}/live-update`)
+    await expect(page.locator('.content')).toContainText('Original text.')
+    const socket = await websocket
+    expect(socket.url()).toContain('/live-update')
+    // This marker would disappear if the update reloaded the document.
+    await page.evaluate(() => { window.liveUpdateMarker = true })
+    await fs.writeFile(notePath, '# After edit\n\nUpdated text from disk.')
+    await expect(page).toHaveTitle('After edit')
+    await expect(page.locator('.content h1')).toHaveText('After edit')
+    await expect(page.locator('.content')).toContainText('Updated text from disk.')
+    await expect(page.locator('.content')).not.toContainText('Original text.')
+    expect(await page.evaluate(() => window.liveUpdateMarker)).toBe(true)
+    expect(errors).toEqual([])
+  } finally {
+    await page.close()
+    await fs.rm(notePath, { force: true })
+  }
+})
+
 test('returns 404 for a missing note', async ({ request }) => {
   const response = await request.get(`${server.url}/missing`)
   expect(response.status()).toBe(404)
@@ -139,6 +165,49 @@ test('home page remains usable on a narrow mobile viewport', async ({ page }) =>
   }))
   expect(layout.columns).toBe(1)
   expect(layout.width).toBeLessThanOrEqual(375)
+})
+
+test('search overlay opens by shortcut and returns highlighted note matches', async ({ page }) => {
+  await fs.writeFile(path.join(dir, 'searchable.md'), '# Searchable Note\n\nThe quick brown fox jumps over the lazy dog.')
+  await page.goto(server.url)
+  const search = page.getByRole('dialog', { name: 'Search notes' })
+  await page.keyboard.press('Control+k')
+  await expect(search).toBeVisible()
+  const input = search.getByRole('searchbox', { name: 'Search notes' })
+  await expect(input).toBeFocused()
+  await input.fill('quick brown')
+  await expect(search.locator('[role="option"]')).toHaveCount(1)
+  await expect(search.locator('.result-name')).toHaveText('searchable.md')
+  await expect(search.locator('mark')).toHaveText('quick brown')
+  await expect(search.locator('.preview')).toHaveCSS('-webkit-line-clamp', '2')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(`${server.url}/searchable`)
+  await expect(page.locator('.content')).toContainText('quick brown')
+})
+
+test('search defaults to recently viewed notes and works on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(`${server.url}/welcome`)
+  await page.goto(server.url)
+  await page.getByRole('button', { name: 'Search notes' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Search notes' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('.search-hint')).toHaveText('Recently viewed')
+  await expect(dialog.locator('[role="option"] .result-name').first()).toHaveText('Welcome')
+  await expect(dialog.locator('[role="option"] .recent-path').first()).toContainText('welcome.md')
+  await expect(dialog.locator('[role="option"] .result-name').first()).toHaveCSS('font-weight', '400')
+  await expect(dialog.locator('[role="option"] a').first()).toHaveCSS('padding', '13px 2px')
+  await expect(dialog.locator('.preview')).toHaveCount(0)
+  await dialog.getByRole('searchbox', { name: 'Search notes' }).fill('quick brown')
+  await expect(dialog.locator('.preview').first()).toHaveCSS('-webkit-line-clamp', '1')
+  const closeSearch = dialog.getByRole('button', { name: 'Close search' })
+  await expect(closeSearch).toHaveCSS('width', '44px')
+  await expect(closeSearch).toHaveCSS('height', '44px')
+  await closeSearch.click()
+  await expect(dialog).not.toBeVisible()
+  await page.goto(`${server.url}/welcome`)
+  await expect(page.locator('.page-header .header-actions .search-trigger')).toBeVisible()
 })
 
 test('theme switcher returns to its original appearance after mobile taps', async ({ browser }) => {

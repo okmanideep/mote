@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="./css/mermaid.css" />
 <header class="page-header">
   <a class="home-link" href="/" aria-label="Mote home" title="Mote home"><img src="/favicon.png?v=2" alt=""></a>
-  <theme-switch></theme-switch>
+  <div class="header-actions"><search></search><theme-switch></theme-switch></div>
 </header>
 <style>
   .page-header {
@@ -40,5 +40,6 @@
     outline: 2px solid var(--highlight-border-color);
     outline-offset: 3px;
   }
+  .header-actions { display:flex;align-items:center;gap:2px; }
 </style>
 <script webc:type="esbuild" src="./live-reload.js"></script>

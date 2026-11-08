@@ -1,0 +1,103 @@
+<div class="search-controls">
+  <button class="search-trigger" type="button" aria-label="Search notes" title="Search notes (⌘K / Ctrl+K)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+  </button>
+</div>
+<dialog class="search-dialog" aria-label="Search notes">
+  <div class="search-panel">
+    <label class="search-input-wrap">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+      <input type="search" placeholder="Search notes…" autocomplete="off" spellcheck="false" aria-label="Search notes">
+      <button class="search-close" type="button" aria-label="Close search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
+    </label>
+    <div class="search-results" role="listbox" aria-label="Search results"><p class="search-hint">Recently viewed</p><ul></ul><p class="search-empty" hidden>No matching notes</p></div>
+    <footer><span>↑↓ to navigate</span><span>↵ to open</span></footer>
+  </div>
+</dialog>
+<script>
+  const dialog = document.querySelector('.search-dialog')
+  const trigger = document.querySelector('.search-trigger')
+  const closeButton = dialog?.querySelector('.search-close')
+  const input = dialog?.querySelector('input')
+  const results = dialog?.querySelector('.search-results ul')
+  const empty = dialog?.querySelector('.search-empty')
+  const hint = dialog?.querySelector('.search-hint')
+  let timer, active = -1, items = []
+  const open = () => { dialog.showModal(); input.value = ''; load(''); input.focus() }
+  const close = () => dialog.close()
+  const load = async query => {
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' })
+      if (!response.ok) return
+      items = await response.json(); active = -1; results.replaceChildren()
+      hint.textContent = query ? 'Search results' : 'Recently viewed'
+      items.forEach((item, index) => {
+        const li = document.createElement('li'); li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false')
+        const link = document.createElement('a'); link.href = item.url
+        const name = document.createElement('span'); name.className = 'result-name'; name.textContent = query ? item.name : (item.title || item.name)
+        const detail = document.createElement('small')
+        if (query) {
+          detail.className = 'preview'
+          const match = item.matches?.[0]
+          if (match && match.start >= 0 && match.end <= item.preview.length) {
+            detail.append(document.createTextNode(item.preview.slice(0, match.start)))
+            const mark = document.createElement('mark'); mark.textContent = item.preview.slice(match.start, match.end); detail.append(mark, document.createTextNode(item.preview.slice(match.end)))
+          } else detail.textContent = item.preview || item.path || ''
+        } else {
+          detail.className = 'recent-path'
+          detail.textContent = item.path || ''
+        }
+        link.append(name, detail); li.append(link); li.dataset.index = String(index); results.append(li)
+      })
+      empty.hidden = items.length > 0
+    } catch (error) { console.error('Could not search notes', error) }
+  }
+  trigger?.addEventListener('click', open)
+  closeButton?.addEventListener('click', close)
+  input?.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => load(input.value.trim()), 120) })
+  dialog?.addEventListener('click', event => { if (event.target === dialog) close() })
+  dialog?.addEventListener('close', () => trigger?.focus())
+  document.addEventListener('keydown', event => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); dialog.open ? close() : open(); return }
+    if (!dialog.open) return
+    if (event.key === 'Escape') { event.preventDefault(); close() }
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && items.length) {
+      event.preventDefault(); active = (active + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
+      results.querySelectorAll('li').forEach((li, i) => li.setAttribute('aria-selected', String(i === active)))
+      results.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' })
+    }
+    if (event.key === 'Enter' && active >= 0) location.href = items[active].url
+  })
+</script>
+<style webc:scoped>
+  :host { display: contents; }
+  .search-trigger { width:44px;height:44px;display:grid;place-items:center;padding:10px;border:0;border-radius:50%;background:none;color:inherit;opacity:.55;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+  .search-trigger svg,.search-input-wrap svg { width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round; }
+  .search-trigger:hover,.search-trigger:focus-visible { opacity:1; }
+  .search-trigger:focus-visible { outline:2px solid currentColor;outline-offset:2px; }
+  .search-dialog { position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:8vh 20px;border:0;background:rgba(15,17,20,.58);color:var(--main-text-color,var(--text,#242421)); }
+  .search-dialog::backdrop { background:transparent; }
+  .search-panel { max-width:640px;margin:0 auto;border:1px solid var(--main-border-color,var(--line,#e4e3df));border-radius:12px;background:var(--main-bg-color,var(--bg,#fff));box-shadow:0 24px 80px #0005;overflow:hidden; }
+  .search-input-wrap { height:60px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--main-border-color,var(--line,#e4e3df)); }
+  .search-input-wrap input { flex:1;min-width:0;border:0;outline:0;background:none;color:inherit;font:inherit;font-size:17px; }
+  .search-close { width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;padding:10px;border:0;border-radius:50%;background:none;color:inherit;opacity:.55;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation; }
+  .search-close svg { width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round; }
+  .search-close:hover,.search-close:focus-visible { opacity:1; }
+  .search-close:focus-visible { outline:2px solid currentColor;outline-offset:2px; }
+  footer { color:var(--muted,#898985);font-size:12px; }
+  .search-results { max-height:min(65vh,560px);overflow:auto;padding:12px; }
+  .search-hint { margin:2px 8px 8px;color:var(--muted,#898985);font-size:12px; }
+  .search-results ul { list-style:none;padding:0;margin:0; }
+  .search-results ul { border-top:1px solid var(--main-border-color,var(--line,#e4e3df)); }
+  .search-results li { border-bottom:1px solid var(--main-border-color,var(--line,#e4e3df)); }
+  .search-results li[aria-selected="true"] { background:color-mix(in srgb,currentColor 8%,transparent); }
+  .search-results a { display:flex;flex-direction:column;padding:13px 2px;color:inherit;text-decoration:none;min-width:0; }
+  .search-results a:hover .result-name { color:#9b542a; }
+  .result-name { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400; }
+  .recent-path { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--muted,#898985); }
+  .preview { display:-webkit-box;overflow:hidden;white-space:pre-line;color:var(--muted,#898985);font-size:13px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2; }
+  mark { background:#f4d78c;color:inherit; }
+  .search-empty { padding:8px;color:var(--muted,#898985);font-size:14px; }
+  footer { display:flex;justify-content:flex-end;gap:18px;padding:10px 18px;border-top:1px solid var(--main-border-color,var(--line,#e4e3df)); }
+  @media(max-width:640px) { .search-dialog { padding:0; } .search-panel { min-height:100%;border-radius:0; } .search-results { max-height:calc(100dvh - 120px); } .preview { -webkit-line-clamp:1; } }
+</style>

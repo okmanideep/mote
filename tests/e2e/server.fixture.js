@@ -6,6 +6,7 @@ import PageRenderer from '../../src/server/page-renderer-webc.js'
 import { RecentFiles, renderHomeLists } from '../../src/server/recent-files.js'
 import mdRenderer from '../../src/server/md-renderer.js'
 import os from 'node:os'
+import { attachLiveUpdates } from '../../src/server/live-updates.js'
 
 export async function startFixture(notesDir) {
   const app = express()
@@ -23,6 +24,7 @@ export async function startFixture(notesDir) {
     res.type('html').send(await pageRenderer.renderHome(renderHomeLists(lists)))
   })
   app.get('/api/recent-files', async (_, res) => res.json(await recentFiles.list()))
+  app.get('/api/search', async (req, res) => res.json(await recentFiles.search(req.query.q || '')))
   app.get('/p/:file', async (req, res) => {
     const file = decodeURIComponent(req.params.file)
     if (!fs.existsSync(file)) return res.sendStatus(404)
@@ -37,6 +39,9 @@ export async function startFixture(notesDir) {
     await recentFiles.recordViewed(file, note.title)
     res.send(await pageRenderer.render(file, note))
   })
+  attachLiveUpdates(ws, pagePath => pagePath.startsWith('/p/')
+    ? decodeURIComponent(pagePath.substring(3))
+    : path.join(notesDir, `${decodeURIComponent(pagePath.substring(1))}.md`))
   return {
     url: `http://127.0.0.1:${site.address().port}`,
     close: async () => {

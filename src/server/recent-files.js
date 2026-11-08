@@ -90,6 +90,47 @@ export class RecentFiles {
     return { viewed: viewed.slice(0, LIMIT), modified: modified.slice(0, LIMIT) }
   }
 
+  async search(query = '') {
+    const normalized = String(query).trim().toLocaleLowerCase()
+    const { viewed } = await this.list()
+    if (!normalized) {
+      const entries = await this.readViewed()
+      return Promise.all(viewed.map(async file => {
+        const entry = entries.find(item => displayPath(item.path) === file.path)
+        const preview = entry ? await previewFor(entry.path) : { text: '', matches: [] }
+        return { ...file, preview: preview.text, matches: preview.matches }
+      }))
+    }
+
+    const files = []
+    const visit = async directory => {
+      let entries
+      try { entries = await fs.readdir(directory, { withFileTypes: true }) } catch { return }
+      for (const entry of entries) {
+        if (entry.name === '.git') continue
+        const file = path.join(directory, entry.name)
+        if (entry.isDirectory()) await visit(file)
+        else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) files.push(file)
+      }
+    }
+    await visit(this.notesDir)
+
+    const results = []
+    for (const file of files) {
+      try {
+        const text = (await fs.readFile(file, 'utf8')).replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/, '')
+        const name = path.relative(this.notesDir, file).replace(/\\/g, '/')
+        const match = findBestMatch(`${name}\n${text}`, normalized)
+        if (!match) continue
+        const lines = text.split(/\r?\n/)
+        const lineIndex = Math.max(0, lines.findIndex(line => line.toLocaleLowerCase().includes(normalized)))
+        const preview = excerpt(lines, lineIndex, normalized)
+        results.push({ path: displayPath(file), name, title: mdRenderer.render(file).title, url: this.urlFor(file), preview: preview.text, matches: preview.matches, score: match + (name.toLocaleLowerCase().includes(normalized) ? 1000 : 0) })
+      } catch { /* skip files that disappear or cannot be read */ }
+    }
+    return results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)).slice(0, 30).map(({ score, ...result }) => result)
+  }
+
   urlFor(file) {
     const absolute = path.resolve(file)
     const relative = path.relative(this.notesDir, absolute)
@@ -98,6 +139,38 @@ export class RecentFiles {
     }
     return `/p/${encodeURIComponent(absolute)}`
   }
+}
+
+async function previewFor(file) {
+  try {
+    const text = (await fs.readFile(file, 'utf8')).replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/, '')
+    return excerpt(text.split(/\r?\n/), 0, '')
+  } catch { return { text: '', matches: [] } }
+}
+
+function excerpt(lines, lineIndex, query) {
+  let first = Math.max(0, lineIndex - 1)
+  while (first < lines.length && !lines[first].trim()) first++
+  const selected = lines.slice(first, Math.min(lines.length, first + 3))
+  const text = selected.join('\n').trim()
+  const at = query ? text.toLocaleLowerCase().indexOf(query) : -1
+  return { text: text.slice(0, 500), matches: at >= 0 ? [{ start: at, end: at + query.length }] : [] }
+}
+
+function findBestMatch(text, query) {
+  const candidate = text.toLocaleLowerCase()
+  if (candidate.includes(query)) return 100 + query.length
+  let score = 0
+  let cursor = 0
+  let previous = -2
+  for (const character of query) {
+    const index = candidate.indexOf(character, cursor)
+    if (index === -1) return null
+    score += (previous === index - 1 ? 10 : 1) - Math.min(index - cursor, 20) / 20
+    previous = index
+    cursor = index + 1
+  }
+  return score
 }
 
 function displayPath(file) {

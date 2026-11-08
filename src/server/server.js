@@ -5,7 +5,7 @@ import fs from 'fs'
 import conf from './conf.js'
 import mdRenderer from './md-renderer.js'
 import PageRenderer from './page-renderer-webc.js'
-import CryptoJS from 'crypto-js'
+import { attachLiveUpdates } from './live-updates.js'
 import ensureFonts from './font-downloader.js'
 import envPaths from 'env-paths'
 import { RecentFiles, renderHomeLists } from './recent-files.js'
@@ -72,6 +72,10 @@ async function start() {
     res.json(await recentFiles.list())
   })
 
+  app.get('/api/search', async function(req, res) {
+    res.json(await recentFiles.search(req.query.q || ''))
+  })
+
   app.use(express.static(path.join(__dirname,'assets')))
 
   app.get(/.*\.(png|jpg|jpeg|gif|webp|svg)$/, function(req, res) {
@@ -115,48 +119,8 @@ async function start() {
   })
 
   const wss = new WebSocketServer({ port: WEBSOCKET_PORT })
-  wss.on('connection', (ws, req) => {
-    let file
+  attachLiveUpdates(wss, resolveMarkdownFileFromPagePath)
 
-    if (req.url.startsWith('/p/')) {
-      file = decodeURIComponent(req.url.substring(3))
-    } else {
-      const filename = req.url.substring(1)
-      file = mdFilePath(filename)
-    }
-
-    if (!fs.existsSync(file)) {
-      ws.send(JSON.stringify({ type: 'error', data: { message: `Couldn't find ${file}` } }))
-      return
-    }
-
-    let prevContentHash = ''
-    fs.watchFile(file, { persistent: true, interval: 300 }, async () => {
-      try {
-        const { content, title } = mdRenderer.render(file)
-        const newContentHash = CryptoJS.MD5(content).toString()
-        if (newContentHash !== prevContentHash) {
-          ws.send(JSON.stringify({ type: 'update', data: { content, title } }))
-          prevContentHash = newContentHash
-        }
-      } catch (e) {
-        console.error(`Error watching file: ${file}`, e)
-      }
-    })
-
-    ws.onclose = () => {
-      fs.unwatchFile(file)
-    }
-
-    ws.onmessage = (msg) => {
-      const payload = JSON.parse(msg.data)
-
-      if (payload.type === 'theme-changed') {
-        const { content, title } = mdRenderer.render(file) 
-        ws.send(JSON.stringify({ type: 'update', data: { content, title } }))
-      }
-    }
-  })
 
 }
 

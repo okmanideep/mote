@@ -85,7 +85,7 @@ class WebCPageRenderer {
     let { html, css, js } = await this.notePageC.compile()
 
     let finalCss = cssmin(css.join("\n"))
-    let finalJs = [...js].join("\n")
+    let finalJs = [...js].join("\n;\n")
 
 
     this.compiled = {
@@ -111,7 +111,7 @@ class WebCPageRenderer {
   async renderHome(lists) {
     const { html, css, js } = await this.homePageC.compile({ data: lists })
     const { html: finalHtml } = await this.layoutC.compile({
-      data: { html, css: cssmin(css.join("\n")), js: [...js].join("\n"), content: '', title: 'Mote' }
+      data: { html, css: cssmin(css.join("\n")), js: [...js].join("\n;\n"), content: '', title: 'Mote' }
     })
     return finalHtml
   }

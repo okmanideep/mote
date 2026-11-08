@@ -45,10 +45,10 @@ let diagrams = {
 
 document.addEventListener("DOMContentLoaded", function() {
 	console.log("DOMContentLoaded")
-	diagrams.initialize()
 
 	const path = window.location.pathname
-	const ws = new WebSocket(`ws://localhost:{{WEBSOCKET_PORT}}${path}`)
+	const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+	const ws = new WebSocket(`${protocol}//${window.location.hostname}:{{WEBSOCKET_PORT}}${path}`)
 	ws.onopen = () => {
 		console.log("Connected")
 	}
@@ -91,6 +91,8 @@ document.addEventListener("DOMContentLoaded", function() {
 			console.error(payload.data.message)
 		}
 	}
+
+	diagrams.initialize()
 
 	/*
 * Refetching markdown content to re-render mermaid diagrams in the new theme
