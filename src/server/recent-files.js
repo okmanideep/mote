@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import mdRenderer from './md-renderer.js'
+import { matchContent, matchFilename } from './fuzzy.js'
 import { displayPath, readSourcePaths, samePath, sourceDirectories, sourcesFilePath } from './sources.js'
 
 const LIMIT = 10
@@ -155,8 +156,9 @@ export class RecentFiles {
       try {
         const text = (await fs.readFile(file, 'utf8')).replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/, '')
         const name = this.relativeName(file, source)
-        const match = findBestMatch(`${name}\n${text}`, normalized)
-        if (!match) continue
+        const nameMatch = matchFilename(name, normalized)
+        const contentMatch = matchContent(text, normalized)
+        if (!nameMatch && !contentMatch) continue
         const lines = text.split(/\r?\n/)
         const lineIndex = Math.max(0, lines.findIndex(line => line.toLocaleLowerCase().includes(normalized)))
         const preview = excerpt(lines, lineIndex, normalized)
@@ -164,15 +166,19 @@ export class RecentFiles {
           path: displayPath(file),
           name,
           sourceLabel: this.sourceLabel(source),
-          title: mdRenderer.render(file).title,
           url: this.urlFor(file),
           preview: preview.text,
+          // Filename matches highlight the name, content matches the preview
+          nameMatches: nameMatch?.matches || [],
           matches: preview.matches,
-          score: match + (name.toLocaleLowerCase().includes(normalized) ? 1000 : 0)
+          score: nameMatch ? nameMatch.score : contentMatch.score,
+          file
         })
       } catch { /* skip files that disappear or cannot be read */ }
     }
-    return results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)).slice(0, 30).map(({ score, ...result }) => result)
+    return results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)).slice(0, 30)
+      // Only the returned notes need a title, and rendering one is not cheap
+      .map(({ score, file, ...result }) => ({ ...result, title: titleFor(file) }))
   }
 
   urlFor(file) {
@@ -182,6 +188,14 @@ export class RecentFiles {
       return `/${encodeURIComponent(relative.replace(/\\/g, '/').replace(/\.md$/i, ''))}`
     }
     return `/p/${encodeURIComponent(absolute)}`
+  }
+}
+
+function titleFor(file) {
+  try {
+    return mdRenderer.render(file).title
+  } catch {
+    return 'Notes'
   }
 }
 
@@ -199,22 +213,6 @@ function excerpt(lines, lineIndex, query) {
   const text = selected.join('\n').trim()
   const at = query ? text.toLocaleLowerCase().indexOf(query) : -1
   return { text: text.slice(0, 500), matches: at >= 0 ? [{ start: at, end: at + query.length }] : [] }
-}
-
-function findBestMatch(text, query) {
-  const candidate = text.toLocaleLowerCase()
-  if (candidate.includes(query)) return 100 + query.length
-  let score = 0
-  let cursor = 0
-  let previous = -2
-  for (const character of query) {
-    const index = candidate.indexOf(character, cursor)
-    if (index === -1) return null
-    score += (previous === index - 1 ? 10 : 1) - Math.min(index - cursor, 20) / 20
-    previous = index
-    cursor = index + 1
-  }
-  return score
 }
 
 export function renderHomeLists({ viewed, modified }) {

@@ -23,6 +23,21 @@
   const empty = dialog?.querySelector('.search-empty')
   const hint = dialog?.querySelector('.search-hint')
   let timer, active = -1, items = [], loadId = 0
+  const appendHighlighted = (element, text, ranges) => {
+    // Ranges are sorted, non-overlapping [start, end) pairs into `text`
+    let cursor = 0
+    for (const range of ranges) {
+      const start = Math.max(cursor, Math.min(range.start, text.length))
+      const end = Math.max(start, Math.min(range.end, text.length))
+      if (start >= end) continue
+      if (start > cursor) element.append(document.createTextNode(text.slice(cursor, start)))
+      const mark = document.createElement('mark')
+      mark.textContent = text.slice(start, end)
+      element.append(mark)
+      cursor = end
+    }
+    if (cursor < text.length) element.append(document.createTextNode(text.slice(cursor)))
+  }
   const open = () => { dialog.showModal(); input.value = ''; load(''); input.focus() }
   const close = () => dialog.close()
   const load = async query => {
@@ -38,9 +53,13 @@
       items.forEach((item, index) => {
         const li = document.createElement('li'); li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false')
         const link = document.createElement('a'); link.href = item.url
-        const name = document.createElement('span'); name.className = 'result-name'; name.textContent = query ? item.name : (item.title || item.name)
+        const name = document.createElement('span'); name.className = 'result-name'
+        const nameText = query ? item.name : (item.title || item.name)
+        const nameMatches = query ? (item.nameMatches || []) : []
+        if (nameMatches.length) appendHighlighted(name, nameText, nameMatches)
+        else name.textContent = nameText
         const detail = document.createElement('small')
-        if (query) {
+        if (query && !nameMatches.length) {
           detail.className = 'preview'
           const match = item.matches?.[0]
           if (match && match.start >= 0 && match.end <= item.preview.length) {

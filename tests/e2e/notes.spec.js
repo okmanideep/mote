@@ -187,6 +187,32 @@ test('combines recently modified notes and search results from added sources', a
   }
 })
 
+test('search ranks filename matches above content matches', async ({ page }) => {
+  const byName = path.join(dir, 'zzz-quarterly.md')
+  const byContent = path.join(dir, 'aaa-report.md')
+  try {
+    await fs.writeFile(byName, '# Quarterly\n\nNo mention of the query in this body.')
+    await fs.writeFile(byContent, '# Report\n\nThe quarterly numbers are in the appendix.')
+    await page.goto(server.url)
+    await page.keyboard.press('Control+k')
+    const search = page.getByRole('dialog', { name: 'Search notes' })
+    await search.getByRole('searchbox').fill('quarterly')
+
+    const first = search.locator('[role="option"]').first()
+    await expect(first.locator('.result-name')).toHaveText('zzz-quarterly.md')
+    await expect(first.locator('.result-name mark')).toHaveText('quarterly')
+    await expect(first.locator('.recent-path')).toContainText('zzz-quarterly.md')
+
+    const contentResult = search.locator('[role="option"]', { hasText: 'aaa-report.md' })
+    await expect(contentResult.locator('.preview mark')).toHaveText('quarterly')
+    const order = await search.locator('[role="option"] .result-name').allInnerTexts()
+    expect(order.indexOf('aaa-report.md')).toBeGreaterThan(0)
+  } finally {
+    await fs.rm(byName, { force: true })
+    await fs.rm(byContent, { force: true })
+  }
+})
+
 test('home page remains usable on a narrow mobile viewport', async ({ page }) => {  await page.setViewportSize({ width: 375, height: 812 })
   await page.goto(server.url)
   await expect(page.getByRole('heading', { name: 'mote' })).toBeVisible()

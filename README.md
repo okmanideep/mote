@@ -9,6 +9,7 @@ https://user-images.githubusercontent.com/5300499/209446094-177336d5-270b-4de6-b
 * Diagrams using `mermaid` code blocks [similar to Github](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams)
 * Light and Dark themes along with a switch
 * Live Preview
+* Search every source directory, ranking fuzzy filename matches above content matches
 * Works for any markdown file anywhere in the disk, cleaner URLs for files in `motes_dir`
 
 ## Installation
