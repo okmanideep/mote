@@ -36,6 +36,17 @@ Windows: `~/AppData/Local/mote/config.json`
 Linux: `~/.config/mote/config.json`  
 MacOs: `~/Library/Preferences/mote/config.json`
 
+## Adding source directories
+`mote source ~/Documents/reports`
+
+Search and the home page's _Recently modified_ list cover every source directory. The
+notes directory (`motes_dir`) is always a source; directories added here are stored in
+Mote's data directory (`sources.json`, next to `recent-files.json`) and take effect
+without restarting the server.
+
+* `mote source --list` lists the source directories
+* `mote source --remove ~/Documents/reports` removes an added source
+
 ## Opening a file
 `mote open path/to/file.md`
 
@@ -85,4 +96,4 @@ The host must remain running and connected for other tailnet devices to view the
 
 ## URL Schema
 Files in `motes_dir` -> `http://localhost:${site_port}/filename`  
-Other files -> `http://localhost:${site_port}/p/full%2Fpath%2Fto%2Ffile.md`
+Files in other source directories and files elsewhere on disk -> `http://localhost:${site_port}/p/full%2Fpath%2Fto%2Ffile.md`

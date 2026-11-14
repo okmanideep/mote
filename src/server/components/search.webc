@@ -22,14 +22,18 @@
   const results = dialog?.querySelector('.search-results ul')
   const empty = dialog?.querySelector('.search-empty')
   const hint = dialog?.querySelector('.search-hint')
-  let timer, active = -1, items = []
+  let timer, active = -1, items = [], loadId = 0
   const open = () => { dialog.showModal(); input.value = ''; load(''); input.focus() }
   const close = () => dialog.close()
   const load = async query => {
+    const requestId = ++loadId
     try {
       const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' })
       if (!response.ok) return
-      items = await response.json(); active = -1; results.replaceChildren()
+      const data = await response.json()
+      // A slower response for an older query must not replace newer results
+      if (requestId !== loadId) return
+      items = data; active = -1; results.replaceChildren()
       hint.textContent = query ? 'Search results' : 'Recently viewed'
       items.forEach((item, index) => {
         const li = document.createElement('li'); li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false')

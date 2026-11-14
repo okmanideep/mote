@@ -140,7 +140,7 @@ test('home page shows recent views and recently modified notes', async ({ page }
   await expect(page.locator('body')).toHaveAttribute('data-theme', 'light')
   await expect(themeToggle.locator('.sun-icon')).toBeVisible()
   await expect(themeToggle.locator('.moon-icon')).toBeHidden()
-  await expect(page.getByRole('heading', { name: 'Recently modified · Notes' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Recently modified' })).toBeVisible()
   const modified = page.locator('section').nth(1)
   await expect(modified.locator('li').first()).toContainText('newer.md')
   await expect(modified.locator('li').first().locator('small')).toHaveText(/ago|just now/)
@@ -154,8 +154,40 @@ test('home page shows recent views and recently modified notes', async ({ page }
   await expect(viewed.locator('li').first().locator('small')).toContainText('newer.md')
 })
 
-test('home page remains usable on a narrow mobile viewport', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 })
+test('combines recently modified notes and search results from added sources', async ({ page }) => {
+  const reports = await fs.mkdtemp(path.join(os.tmpdir(), 'mote-reports-'))
+  try {
+    await fs.writeFile(path.join(reports, 'quarterly.md'), '# Quarterly Report\n\nRevenue grew in the third quarter.')
+    const newer = new Date(Date.now() + 60_000)
+    await fs.utimes(path.join(reports, 'quarterly.md'), newer, newer)
+    expect((await server.addSource(reports)).added).toBe(true)
+
+    await page.goto(server.url)
+    const modified = page.locator('[data-recent-list="modified"]')
+    const firstModified = modified.locator('li').first()
+    await expect(firstModified.locator('span')).toHaveText('quarterly.md')
+    await expect(firstModified.locator('small')).toContainText(`${path.basename(reports)} · `)
+
+    await page.keyboard.press('Control+k')
+    const search = page.getByRole('dialog', { name: 'Search notes' })
+    await search.getByRole('searchbox', { name: 'Search notes' }).fill('revenue grew')
+    const result = search.locator('[role="option"]').first()
+    await expect(search.locator('[role="option"]')).toHaveCount(1)
+    await expect(result.locator('.result-name')).toHaveText('quarterly.md')
+    await expect(result.locator('mark')).toHaveText('Revenue grew')
+
+    await result.locator('a').click()
+    await expect(page).toHaveURL(`${server.url}/p/${encodeURIComponent(path.join(reports, 'quarterly.md'))}`)
+    await expect(page.locator('.content h1')).toHaveText('Quarterly Report')
+    await page.goto(server.url)
+    await expect(page.locator('[data-recent-list="viewed"] li').first().locator('span')).toHaveText('Quarterly Report')
+    await expect(page.locator('[data-recent-list="viewed"] li').first().locator('small')).toContainText(`${path.basename(reports)}/quarterly.md`)
+  } finally {
+    await fs.rm(reports, { recursive: true, force: true })
+  }
+})
+
+test('home page remains usable on a narrow mobile viewport', async ({ page }) => {  await page.setViewportSize({ width: 375, height: 812 })
   await page.goto(server.url)
   await expect(page.getByRole('heading', { name: 'mote' })).toBeVisible()
   await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 375)

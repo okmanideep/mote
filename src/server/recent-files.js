@@ -1,9 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import os from 'node:os'
 import mdRenderer from './md-renderer.js'
+import { displayPath, readSourcePaths, samePath, sourceDirectories, sourcesFilePath } from './sources.js'
 
 const LIMIT = 10
+const SKIP_DIRECTORIES = new Set(['.git', 'node_modules'])
 const RELATIVE_TIME_UNITS = [
   { duration: 365 * 24 * 60 * 60 * 1000, suffix: 'y' },
   { duration: 30 * 24 * 60 * 60 * 1000, suffix: 'mo' },
@@ -14,10 +15,26 @@ const RELATIVE_TIME_UNITS = [
 ]
 
 export class RecentFiles {
-  constructor(stateFile, notesDir) {
+  constructor(stateFile, notesDir, sourcesFile = sourcesFilePath()) {
     this.stateFile = stateFile
     this.notesDir = path.resolve(notesDir)
+    this.sourcesFile = sourcesFile
     this.writeQueue = Promise.resolve()
+  }
+
+  // Sources are re-read on every request so `mote source` needs no restart
+  async sources() {
+    return sourceDirectories(this.notesDir, await readSourcePaths(this.sourcesFile))
+  }
+
+  relativeName(file, source) {
+    const relative = path.relative(source, path.resolve(file)).split(path.sep).join('/')
+    return relative || path.basename(file)
+  }
+
+  // The notes directory needs no label: everything else is an added source
+  sourceLabel(source) {
+    return samePath(source, this.notesDir) ? null : path.basename(source)
   }
 
   async readViewed() {
@@ -71,21 +88,33 @@ export class RecentFiles {
     }
 
     const modified = []
-    const visit = async directory => {
+    const seen = new Set()
+    const visit = async (directory, source) => {
       let entries
       try { entries = await fs.readdir(directory, { withFileTypes: true }) } catch { return }
       for (const entry of entries) {
+        if (SKIP_DIRECTORIES.has(entry.name)) continue
         const file = path.join(directory, entry.name)
-        if (entry.isDirectory()) await visit(file)
+        if (entry.isDirectory()) await visit(file, source)
         else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
+          const absolute = path.resolve(file)
+          if (seen.has(absolute)) continue
+          seen.add(absolute)
           try {
             const stat = await fs.stat(file)
-            modified.push({ path: displayPath(file), name: path.relative(this.notesDir, file), url: this.urlFor(file), modified: stat.mtimeMs, modifiedLabel: formatAgo(stat.mtimeMs) })
+            modified.push({
+              path: displayPath(file),
+              name: this.relativeName(file, source),
+              sourceLabel: this.sourceLabel(source),
+              url: this.urlFor(file),
+              modified: stat.mtimeMs,
+              modifiedLabel: formatAgo(stat.mtimeMs)
+            })
           } catch { /* the file may have disappeared while scanning */ }
         }
       }
     }
-    await visit(this.notesDir)
+    for (const source of await this.sources()) await visit(source, source)
     modified.sort((a, b) => b.modified - a.modified)
     return { viewed: viewed.slice(0, LIMIT), modified: modified.slice(0, LIMIT) }
   }
@@ -103,29 +132,44 @@ export class RecentFiles {
     }
 
     const files = []
-    const visit = async directory => {
+    const seen = new Set()
+    const visit = async (directory, source) => {
       let entries
       try { entries = await fs.readdir(directory, { withFileTypes: true }) } catch { return }
       for (const entry of entries) {
-        if (entry.name === '.git') continue
+        if (SKIP_DIRECTORIES.has(entry.name)) continue
         const file = path.join(directory, entry.name)
-        if (entry.isDirectory()) await visit(file)
-        else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) files.push(file)
+        if (entry.isDirectory()) await visit(file, source)
+        else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
+          const absolute = path.resolve(file)
+          if (seen.has(absolute)) continue
+          seen.add(absolute)
+          files.push({ file, source })
+        }
       }
     }
-    await visit(this.notesDir)
+    for (const source of await this.sources()) await visit(source, source)
 
     const results = []
-    for (const file of files) {
+    for (const { file, source } of files) {
       try {
         const text = (await fs.readFile(file, 'utf8')).replace(/^\uFEFF?---[\t ]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[\t ]*(?:\r?\n|$)/, '')
-        const name = path.relative(this.notesDir, file).replace(/\\/g, '/')
+        const name = this.relativeName(file, source)
         const match = findBestMatch(`${name}\n${text}`, normalized)
         if (!match) continue
         const lines = text.split(/\r?\n/)
         const lineIndex = Math.max(0, lines.findIndex(line => line.toLocaleLowerCase().includes(normalized)))
         const preview = excerpt(lines, lineIndex, normalized)
-        results.push({ path: displayPath(file), name, title: mdRenderer.render(file).title, url: this.urlFor(file), preview: preview.text, matches: preview.matches, score: match + (name.toLocaleLowerCase().includes(normalized) ? 1000 : 0) })
+        results.push({
+          path: displayPath(file),
+          name,
+          sourceLabel: this.sourceLabel(source),
+          title: mdRenderer.render(file).title,
+          url: this.urlFor(file),
+          preview: preview.text,
+          matches: preview.matches,
+          score: match + (name.toLocaleLowerCase().includes(normalized) ? 1000 : 0)
+        })
       } catch { /* skip files that disappear or cannot be read */ }
     }
     return results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)).slice(0, 30).map(({ score, ...result }) => result)
@@ -173,17 +217,6 @@ function findBestMatch(text, query) {
   return score
 }
 
-function displayPath(file) {
-  const absolute = path.resolve(file)
-  const home = path.resolve(os.homedir())
-  const relative = path.relative(home, absolute)
-  if (relative === '') return '~'
-  if (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)) {
-    return `~/${relative.split(path.sep).join('/')}`
-  }
-  return absolute
-}
-
 export function renderHomeLists({ viewed, modified }) {
   return {
     viewedHtml: listHtml(viewed, 'viewed'),
@@ -196,12 +229,13 @@ function listHtml(files, kind) {
 }
 
 function listItem(file, kind) {
-  const detail = kind === 'modified' ? modifiedTime(file.modified) : escapeHtml(file.path)
+  const detail = kind === 'modified' ? modifiedTime(file) : escapeHtml(file.path)
   return `<li><a href="${escapeHtml(file.url)}"><span>${escapeHtml(file.title || file.name)}</span><small>${detail}</small></a></li>`
 }
 
-function modifiedTime(timestamp) {
-  return escapeHtml(formatAgo(timestamp))
+function modifiedTime(file) {
+  const ago = formatAgo(file.modified)
+  return escapeHtml(file.sourceLabel ? `${file.sourceLabel} · ${ago}` : ago)
 }
 
 function formatAgo(timestamp) {

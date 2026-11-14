@@ -6,6 +6,7 @@ import stop from './stop.js'
 import open from './open.js'
 import link from './link.js'
 import config from './config.js'
+import source from './source.js'
 
 async function restart() {
   await stop()
@@ -43,5 +44,13 @@ program
   .command('config')
   .description('Setup the config file')
   .action(config)
+
+program
+  .command('source')
+  .description('Add a directory to Mote\'s search and recently modified lists')
+  .argument('[path]', 'path of the directory to add')
+  .option('-l, --list', 'list source directories')
+  .option('-r, --remove', 'remove a source directory')
+  .action(source)
 
 program.parse()

@@ -4,6 +4,7 @@ import path from 'node:path'
 import { WebSocketServer } from 'ws'
 import PageRenderer from '../../src/server/page-renderer-webc.js'
 import { RecentFiles, renderHomeLists } from '../../src/server/recent-files.js'
+import { addSource } from '../../src/server/sources.js'
 import mdRenderer from '../../src/server/md-renderer.js'
 import os from 'node:os'
 import { attachLiveUpdates } from '../../src/server/live-updates.js'
@@ -16,7 +17,8 @@ export async function startFixture(notesDir) {
   await new Promise(resolve => ws.once('listening', resolve))
   const pageRenderer = new PageRenderer(ws.address().port)
   const stateDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'mote-state-'))
-  const recentFiles = new RecentFiles(path.join(stateDir, 'recent-files.json'), notesDir)
+  const sourcesFile = path.join(stateDir, 'sources.json')
+  const recentFiles = new RecentFiles(path.join(stateDir, 'recent-files.json'), notesDir, sourcesFile)
   app.use(express.static(path.resolve('src/server/assets')))
   app.get('/status', (_, res) => res.sendStatus(200))
   app.get('/', async (_, res) => {
@@ -44,6 +46,7 @@ export async function startFixture(notesDir) {
     : path.join(notesDir, `${decodeURIComponent(pagePath.substring(1))}.md`))
   return {
     url: `http://127.0.0.1:${site.address().port}`,
+    addSource: directory => addSource(directory, { file: sourcesFile, notesDir }),
     close: async () => {
       await new Promise(resolve => ws.close(resolve))
       await new Promise(resolve => site.close(resolve))

@@ -1,3 +1,5 @@
 /node_modules
 .DS_Store
 /src/server/assets/fonts/
+/test-results/
+/playwright-report/

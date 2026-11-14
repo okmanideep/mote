@@ -6,7 +6,7 @@
   </header>
   <main>
     <file-list kind="viewed"><span slot="title">Recently viewed</span><template webc:nokeep @raw="viewedHtml"></template><p class="empty" data-empty="viewed" hidden>Nothing here yet.</p></file-list>
-    <file-list kind="modified"><span slot="title">Recently modified · Notes</span><template webc:nokeep @raw="modifiedHtml"></template><p class="empty" data-empty="modified" hidden>Nothing here yet.</p></file-list>
+    <file-list kind="modified"><span slot="title">Recently modified</span><template webc:nokeep @raw="modifiedHtml"></template><p class="empty" data-empty="modified" hidden>Nothing here yet.</p></file-list>
   </main>
 </div>
 <style>
@@ -31,5 +31,5 @@
   @media(max-width:640px){.wrap{padding:30px 18px 44px}header{margin:2px 0 36px}h1{font-size:36px}main{grid-template-columns:1fr;gap:32px}}
 </style>
 <script>
-  let refreshInFlight=false;async function refreshRecentFiles(){if(refreshInFlight)return;refreshInFlight=true;try{const response=await fetch('/api/recent-files',{cache:'no-store'});if(!response.ok)return;const data=await response.json();for(const kind of ['viewed','modified']){const list=document.querySelector('[data-recent-list="'+kind+'"]');const empty=document.querySelector('[data-empty="'+kind+'"]');list.replaceChildren(...data[kind].map(file=>{const li=document.createElement('li');const link=document.createElement('a');link.href=file.url;const name=document.createElement('span');name.textContent=file.title||file.name;const detail=document.createElement('small');detail.textContent=kind==='modified'?file.modifiedLabel:file.path;link.append(name,detail);li.append(link);return li}));empty.hidden=data[kind].length>0}}catch(error){console.error('Could not refresh recent files',error)}finally{refreshInFlight=false}}window.addEventListener('pageshow',refreshRecentFiles);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshRecentFiles()});
+  let refreshInFlight=false;async function refreshRecentFiles(){if(refreshInFlight)return;refreshInFlight=true;try{const response=await fetch('/api/recent-files',{cache:'no-store'});if(!response.ok)return;const data=await response.json();for(const kind of ['viewed','modified']){const list=document.querySelector('[data-recent-list="'+kind+'"]');const empty=document.querySelector('[data-empty="'+kind+'"]');list.replaceChildren(...data[kind].map(file=>{const li=document.createElement('li');const link=document.createElement('a');link.href=file.url;const name=document.createElement('span');name.textContent=file.title||file.name;const detail=document.createElement('small');detail.textContent=kind==='modified'?(file.sourceLabel?file.sourceLabel+' · '+file.modifiedLabel:file.modifiedLabel):file.path;link.append(name,detail);li.append(link);return li}));empty.hidden=data[kind].length>0}}catch(error){console.error('Could not refresh recent files',error)}finally{refreshInFlight=false}}window.addEventListener('pageshow',refreshRecentFiles);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshRecentFiles()});
 </script>
